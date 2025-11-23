@@ -1,11 +1,13 @@
 package com.bebeis.skillweaver.core.service.learning
 
+import com.bebeis.skillweaver.agent.domain.GeneratedLearningPlan
 import com.bebeis.skillweaver.api.common.exception.ErrorCode
 import com.bebeis.skillweaver.api.common.exception.notFound
 import com.bebeis.skillweaver.api.plan.dto.*
 import com.bebeis.skillweaver.core.domain.learning.LearningPlan
 import com.bebeis.skillweaver.core.domain.learning.LearningPlanStatus
 import com.bebeis.skillweaver.core.domain.learning.LearningStep
+import com.bebeis.skillweaver.core.domain.learning.StepDifficulty
 import com.bebeis.skillweaver.core.storage.learning.LearningPlanRepository
 import com.bebeis.skillweaver.core.storage.learning.LearningStepRepository
 import com.bebeis.skillweaver.core.storage.member.MemberRepository
@@ -13,6 +15,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 @Service
 @Transactional(readOnly = true)
@@ -241,5 +244,59 @@ class LearningPlanService(
             status = plan.status,
             steps = steps.map { StepProgressResponse.from(it) }
         )
+    }
+    
+    @Transactional
+    fun createPlanFromAgent(generatedPlan: GeneratedLearningPlan): LearningPlan {
+        if (!memberRepository.existsById(generatedPlan.memberId)) {
+            notFound(ErrorCode.MEMBER_NOT_FOUND)
+        }
+        
+        val totalWeeks = ChronoUnit.WEEKS.between(
+            generatedPlan.startDate,
+            generatedPlan.targetEndDate
+        ).toInt().coerceAtLeast(1)
+        
+        val plan = LearningPlan(
+            memberId = generatedPlan.memberId,
+            targetTechnology = generatedPlan.targetTechnologyName,
+            totalWeeks = totalWeeks,
+            totalHours = generatedPlan.totalEstimatedHours,
+            status = LearningPlanStatus.ACTIVE,
+            progress = 0,
+            backgroundAnalysis = generatedPlan.description,
+            startedAt = generatedPlan.startDate.atStartOfDay()
+        )
+        
+        val savedPlan = learningPlanRepository.save(plan)
+        logger.info("Agent-generated learning plan saved: ${savedPlan.learningPlanId}")
+        
+        // Agent가 생성한 단계를 DB에 저장
+        val steps = generatedPlan.steps.map { generatedStep ->
+            LearningStep(
+                learningPlanId = savedPlan.learningPlanId!!,
+                order = generatedStep.order,
+                title = generatedStep.title,
+                description = generatedStep.description,
+                estimatedHours = generatedStep.estimatedHours,
+                difficulty = estimateDifficulty(generatedStep.estimatedHours),
+                completed = false,
+                objectives = generatedStep.keyTopics.joinToString(", "),
+                suggestedResources = generatedStep.resources.joinToString(", ")
+            )
+        }
+        
+        val savedSteps = learningStepRepository.saveAll(steps)
+        logger.info("${savedSteps.size} agent-generated learning steps saved for plan ${savedPlan.learningPlanId}")
+        
+        return savedPlan
+    }
+    
+    private fun estimateDifficulty(estimatedHours: Int): StepDifficulty {
+        return when {
+            estimatedHours <= 8 -> StepDifficulty.EASY
+            estimatedHours <= 16 -> StepDifficulty.MEDIUM
+            else -> StepDifficulty.HARD
+        }
     }
 }
