@@ -38,7 +38,6 @@ class Member(
     val memberId: Long? = null,
 ) : BaseEntity() {
 
-    // TODO: embabel tool로 노출
     fun weeklyCapacityMinutes(): Int {
         val base = learningPreference.dailyMinutes * 5
         val weekendBoost = if (learningPreference.weekendBoost) {
@@ -49,31 +48,44 @@ class Member(
         return base + weekendBoost
     }
 
-    /**
-     * 비밀번호 일치 여부 확인
-     * @param rawPassword 평문 비밀번호
-     * @param passwordEncoder 비밀번호 인코더 (BCrypt 등)
-     * @return 일치 여부
-     */
-    fun matchesPassword(rawPassword: String, passwordEncoder: (String, String) -> Boolean): Boolean {
-        return passwordEncoder(rawPassword, this.password)
+    fun matchesPassword(rawPassword: String): Boolean {
+        return PasswordEncoder.matches(rawPassword, this.password)
     }
 
-    /**
-     * 비밀번호 변경
-     * @param newPassword 새로운 평문 비밀번호
-     * @param passwordEncoder 비밀번호 인코더
-     * @return 비밀번호가 변경된 새로운 Member 인스턴스
-     */
-    fun changePassword(newPassword: String, passwordEncoder: (String) -> String): Member {
+    fun update(
+        name: String? = null,
+        targetTrack: TargetTrack? = null,
+        experienceLevel: ExperienceLevel? = null,
+        learningPreference: LearningPreference? = null
+    ): Member {
         return Member(
-            name = this.name,
-            targetTrack = this.targetTrack,
-            experienceLevel = this.experienceLevel,
+            name = name ?: this.name,
+            targetTrack = targetTrack ?: this.targetTrack,
+            experienceLevel = experienceLevel ?: this.experienceLevel,
             email = this.email,
-            password = passwordEncoder(newPassword),
-            learningPreference = this.learningPreference,
+            password = this.password,
+            learningPreference = learningPreference ?: this.learningPreference,
             memberId = this.memberId
         )
+    }
+
+    companion object {
+        fun create(
+            name: String,
+            email: String,
+            rawPassword: String,
+            targetTrack: TargetTrack,
+            experienceLevel: ExperienceLevel,
+            learningPreference: LearningPreference = LearningPreference()
+        ): Member {
+            return Member(
+                name = name,
+                email = email,
+                password = PasswordEncoder.encode(rawPassword),
+                targetTrack = targetTrack,
+                experienceLevel = experienceLevel,
+                learningPreference = learningPreference
+            )
+        }
     }
 }

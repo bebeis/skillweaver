@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: skillweaver
+  
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:skillweaver;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+  
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+jwt:
+  secret: ${JWT_SECRET:skillweaver-jwt-secret-key-for-development-only-change-in-production}
+  access-token-validity: 3600000 # 1 hour in milliseconds
+  refresh-token-validity: 604800000 # 7 days in milliseconds
+  refresh-cookie-name: SW_REFRESH
+
+logging:
+  level:
+    root: INFO
+    com.bebeis.skillweaver: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
