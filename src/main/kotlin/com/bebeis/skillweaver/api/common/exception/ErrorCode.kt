@@ -20,6 +20,8 @@ enum class ErrorCode(
     TECHNOLOGY_NOT_FOUND("TECHNOLOGY_NOT_FOUND", "기술을 찾을 수 없습니다"),
     MEMBER_SKILL_NOT_FOUND("MEMBER_SKILL_NOT_FOUND", "회원 기술을 찾을 수 없습니다"),
     LEARNING_GOAL_NOT_FOUND("LEARNING_GOAL_NOT_FOUND", "학습 목표를 찾을 수 없습니다"),
+    LEARNING_PLAN_NOT_FOUND("LEARNING_PLAN_NOT_FOUND", "학습 계획을 찾을 수 없습니다"),
+    LEARNING_STEP_NOT_FOUND("LEARNING_STEP_NOT_FOUND", "학습 단계를 찾을 수 없습니다"),
     
     CONFLICT("CONFLICT", "중복된 데이터가 존재합니다"),
     EMAIL_ALREADY_EXISTS("EMAIL_ALREADY_EXISTS", "이미 사용 중인 이메일입니다"),
