@@ -238,4 +238,430 @@ class NewTechLearningAgent(
         
         return prefers
     }
+    
+    @Action
+    @Condition("!prefersFastPlan")
+    fun deepAnalysis(
+        profile: MemberProfile,
+        request: LearningRequest,
+        context: OperationContext
+    ): DeepTechContext {
+        logger.info("Deep analysis for technology: {}", request.targetTechnologyKey)
+        
+        val technology = technologyRepository.findByKey(request.targetTechnologyKey)
+            ?: throw IllegalArgumentException("Technology not found: ${request.targetTechnologyKey}")
+        
+        return context.ai()
+            .withLlm(gpt4oMini)
+            .create(
+                prompt = """
+                Provide a DEEP analysis of the technology: ${technology.displayName} (${technology.key})
+                
+                Member Profile:
+                - Experience Level: ${profile.experienceLevel.name}
+                - Target Track: ${profile.targetTrack.name}
+                - Current Skills: ${profile.currentSkillCount}
+                
+                Return a DeepTechContext with:
+                - technologyKey: ${technology.key}
+                - displayName: ${technology.displayName}
+                - category: ${technology.category.name}
+                - detailedDescription: Comprehensive description (4-5 sentences)
+                - ecosystem: Main ecosystem it belongs to (e.g., "JVM", "JavaScript", "Python")
+                - prerequisites: List of prerequisite knowledge/technologies
+                - relatedTechnologies: List of complementary technologies
+                - commonUseCases: List of typical use cases
+                - estimatedLearningWeeks: Estimated weeks considering member's level
+                - difficultyLevel: "EASY", "MEDIUM", or "HARD"
+                - marketDemand: "LOW", "MEDIUM", "HIGH", or "VERY_HIGH"
+                
+                Provide thorough, accurate information for an INTERMEDIATE developer.
+                """.trimIndent()
+            )
+    }
+    
+    @Action
+    @Condition("hasSufficientSkills && !prefersFastPlan")
+    fun quickGapCheck(
+        profile: MemberProfile,
+        techContext: DeepTechContext,
+        context: OperationContext
+    ): QuickGapAnalysis {
+        logger.info("Quick gap check for member: {}", profile.memberId)
+        
+        val currentSkills = memberSkillRepository.findByMemberId(profile.memberId)
+        val skillNames = currentSkills.mapNotNull { skill ->
+            skill.technologyId?.let { technologyRepository.findById(it).orElse(null)?.key }
+                ?: skill.customName
+        }.joinToString(", ")
+        
+        return context.ai()
+            .withLlm(gpt4oMini)
+            .create(
+                prompt = """
+                Analyze skill gaps for learning ${techContext.displayName}.
+                
+                Member Profile:
+                - Experience Level: ${profile.experienceLevel.name}
+                - Current Skills: $skillNames
+                - Skill Count: ${profile.currentSkillCount}
+                
+                Technology Info:
+                - Prerequisites: ${techContext.prerequisites.joinToString(", ")}
+                - Related Technologies: ${techContext.relatedTechnologies.joinToString(", ")}
+                
+                Return a QuickGapAnalysis with:
+                - hasSignificantGaps: true if member lacks critical prerequisites
+                - identifiedGaps: List of missing knowledge areas (max 5)
+                - strengthAreas: List of existing skills that will help (max 3)
+                - recommendedPreparation: Brief advice if gaps exist, null otherwise
+                
+                Be honest but encouraging for an INTERMEDIATE developer.
+                """.trimIndent()
+            )
+    }
+    
+    @Action
+    @Condition("!prefersFastPlan")
+    fun generateStandardCurriculum(
+        profile: MemberProfile,
+        techContext: DeepTechContext,
+        gapAnalysis: QuickGapAnalysis,
+        context: OperationContext
+    ): StandardCurriculum {
+        logger.info("Generating standard curriculum for: {}", techContext.technologyKey)
+        
+        val weeklyHours = profile.weeklyCapacityMinutes / 60
+        
+        return context.ai()
+            .withLlm(gpt4oMini)
+            .create(
+                prompt = """
+                Generate a STANDARD learning curriculum for ${techContext.displayName}.
+                
+                Technology Info:
+                - Category: ${techContext.category}
+                - Ecosystem: ${techContext.ecosystem}
+                - Difficulty: ${techContext.difficultyLevel}
+                - Prerequisites: ${techContext.prerequisites.joinToString(", ")}
+                - Use Cases: ${techContext.commonUseCases.joinToString(", ")}
+                
+                Member Context:
+                - Experience Level: ${profile.experienceLevel.name}
+                - Weekly Capacity: $weeklyHours hours
+                - Learning Style: ${profile.learningPreference.learningStyle.name}
+                - Prefers Korean: ${profile.learningPreference.preferKorean}
+                
+                Gap Analysis:
+                - Has Gaps: ${gapAnalysis.hasSignificantGaps}
+                - Identified Gaps: ${gapAnalysis.identifiedGaps.joinToString(", ")}
+                - Strengths: ${gapAnalysis.strengthAreas.joinToString(", ")}
+                
+                Create a StandardCurriculum with EXACTLY 5-7 steps:
+                - Include foundation building if gaps exist
+                - Cover core concepts thoroughly
+                - Add intermediate topics
+                - Include practical application
+                - Estimate hours realistically
+                - Balance theory and practice
+                
+                Return a list of StepBlueprint objects with:
+                - order: 1, 2, 3, ..., 7
+                - title: Clear step title
+                - description: What to learn (3-4 sentences)
+                - estimatedHours: Hours needed
+                - prerequisites: List of prerequisite concepts
+                - keyTopics: 3-5 key topics to cover
+                
+                Make it COMPREHENSIVE and BALANCED for an INTERMEDIATE developer!
+                """.trimIndent()
+            )
+    }
+    
+    @Action
+    fun finalizeStandardPlan(
+        profile: MemberProfile,
+        techContext: DeepTechContext,
+        curriculum: StandardCurriculum,
+        gapAnalysis: QuickGapAnalysis,
+        request: LearningRequest
+    ): GeneratedLearningPlan {
+        logger.info("Finalizing standard plan for member: {} / technology: {}", 
+            profile.memberId, techContext.technologyKey)
+        
+        val totalHours = curriculum.steps.sumOf { it.estimatedHours }
+        val weeklyHours = profile.weeklyCapacityMinutes / 60
+        val estimatedWeeks = (totalHours.toDouble() / weeklyHours).toInt().coerceAtLeast(1)
+        
+        val startDate = LocalDate.now()
+        val targetEndDate = startDate.plus(estimatedWeeks.toLong(), ChronoUnit.WEEKS)
+        
+        val description = buildString {
+            append("Standard ${techContext.displayName} learning plan for ${profile.experienceLevel.name} developers. ")
+            if (gapAnalysis.hasSignificantGaps) {
+                append("Includes foundation building to address knowledge gaps. ")
+            }
+            append("Covers ${curriculum.steps.size} comprehensive steps over $estimatedWeeks weeks.")
+        }
+        
+        return GeneratedLearningPlan(
+            memberId = profile.memberId,
+            targetTechnologyKey = request.targetTechnologyKey,
+            targetTechnologyName = techContext.displayName,
+            title = "Standard ${techContext.displayName} Learning Path",
+            description = description,
+            totalEstimatedHours = totalHours,
+            startDate = startDate,
+            targetEndDate = targetEndDate,
+            steps = curriculum.steps.map { step ->
+                GeneratedStep(
+                    order = step.order,
+                    title = step.title,
+                    description = step.description,
+                    estimatedHours = step.estimatedHours,
+                    keyTopics = step.keyTopics,
+                    resources = emptyList()
+                )
+            },
+            metadata = PlanMetadata(
+                generatedPath = "STANDARD",
+                llmModel = "GPT-4o-mini",
+                estimatedCost = 0.15,
+                generationTimeSeconds = 480,
+                analysisDepth = "MODERATE",
+                gapAnalysisPerformed = true,
+                resourcesEnriched = false
+            )
+        )
+    }
+    
+    @Condition
+    fun needsStandardPath(profile: MemberProfile): Boolean {
+        val needs = !prefersFastPlan(profile) && 
+                profile.experienceLevel == ExperienceLevel.INTERMEDIATE
+        
+        logger.debug("needsStandardPath for member {}: {}", profile.memberId, needs)
+        
+        return needs
+    }
+    
+    @Action
+    @Condition("!hasSufficientSkills")
+    fun detailedGapAnalysis(
+        profile: MemberProfile,
+        techContext: DeepTechContext,
+        context: OperationContext
+    ): DetailedGapAnalysis {
+        logger.info("Detailed gap analysis for member: {}", profile.memberId)
+        
+        val currentSkills = memberSkillRepository.findByMemberId(profile.memberId)
+        val skillDetails = currentSkills.mapNotNull { skill ->
+            val techName = skill.technologyId?.let { 
+                technologyRepository.findById(it).orElse(null)?.displayName 
+            } ?: skill.customName
+            techName?.let { "$it (${skill.level.name}, ${skill.yearsOfUse} years)" }
+        }.joinToString("\n- ")
+        
+        return context.ai()
+            .withLlm(gpt4oMini)
+            .create(
+                prompt = """
+                Perform a DETAILED gap analysis for learning ${techContext.displayName}.
+                
+                Member Profile:
+                - Experience Level: ${profile.experienceLevel.name}
+                - Target Track: ${profile.targetTrack.name}
+                - Current Skills:
+                  - $skillDetails
+                
+                Technology Requirements:
+                - Prerequisites: ${techContext.prerequisites.joinToString(", ")}
+                - Related Technologies: ${techContext.relatedTechnologies.joinToString(", ")}
+                - Difficulty: ${techContext.difficultyLevel}
+                
+                Return a DetailedGapAnalysis with:
+                - overallReadiness: "NOT_READY", "PARTIALLY_READY", or "READY"
+                - criticalGaps: List of GapDetail (area, severity, description, recommendedAction)
+                - minorGaps: List of less critical missing knowledge
+                - strengths: Existing skills that will help
+                - preparationPlan: List of PreparationStep to address gaps
+                - estimatedPrepWeeks: Weeks needed for preparation
+                
+                Be thorough and provide actionable guidance for a BEGINNER.
+                """.trimIndent()
+            )
+    }
+    
+    @Action
+    @Condition("!hasSufficientSkills")
+    fun generateDetailedCurriculum(
+        profile: MemberProfile,
+        techContext: DeepTechContext,
+        gapAnalysis: DetailedGapAnalysis,
+        context: OperationContext
+    ): DetailedCurriculum {
+        logger.info("Generating detailed curriculum for: {}", techContext.technologyKey)
+        
+        val weeklyHours = profile.weeklyCapacityMinutes / 60
+        
+        return context.ai()
+            .withLlm(gpt4oMini)
+            .create(
+                prompt = """
+                Generate a DETAILED learning curriculum for ${techContext.displayName}.
+                
+                Technology Info:
+                - Category: ${techContext.category}
+                - Ecosystem: ${techContext.ecosystem}
+                - Difficulty: ${techContext.difficultyLevel}
+                - Prerequisites: ${techContext.prerequisites.joinToString(", ")}
+                - Common Use Cases: ${techContext.commonUseCases.joinToString(", ")}
+                
+                Member Context:
+                - Experience Level: ${profile.experienceLevel.name} (BEGINNER)
+                - Weekly Capacity: $weeklyHours hours
+                - Learning Style: ${profile.learningPreference.learningStyle.name}
+                - Prefers Korean: ${profile.learningPreference.preferKorean}
+                
+                Gap Analysis:
+                - Overall Readiness: ${gapAnalysis.overallReadiness}
+                - Critical Gaps: ${gapAnalysis.criticalGaps.size}
+                - Preparation Weeks: ${gapAnalysis.estimatedPrepWeeks}
+                
+                Create a DetailedCurriculum with EXACTLY 8-12 steps:
+                - Include ALL prerequisite foundation building
+                - Start from absolute basics if needed
+                - Progress gradually through fundamentals
+                - Cover intermediate concepts thoroughly
+                - Include multiple practice opportunities
+                - Add real-world project work
+                - Provide clear milestones
+                - Estimate hours generously
+                
+                Return a list of StepBlueprint objects with:
+                - order: 1, 2, 3, ..., 12
+                - title: Very clear, beginner-friendly title
+                - description: Detailed what/why/how (4-5 sentences)
+                - estimatedHours: Generous time estimate
+                - prerequisites: Clear prerequisite list
+                - keyTopics: 4-6 specific topics to master
+                
+                Make it COMPREHENSIVE, GENTLE, and SUPPORTIVE for a BEGINNER!
+                """.trimIndent()
+            )
+    }
+    
+    @Action
+    @Condition("!hasSufficientSkills")
+    fun enrichWithResources(
+        curriculum: DetailedCurriculum,
+        techContext: DeepTechContext,
+        profile: MemberProfile,
+        context: OperationContext
+    ): EnrichedCurriculum {
+        logger.info("Enriching curriculum with resources")
+        
+        val steps = curriculum.steps.map { step ->
+            val resources = context.ai()
+                .withLlm(gpt4oMini)
+                .create<List<LearningResource>>(
+                    prompt = """
+                    Suggest 3-5 learning resources for this step:
+                    
+                    Step: ${step.title}
+                    Topics: ${step.keyTopics.joinToString(", ")}
+                    Technology: ${techContext.displayName}
+                    Prefers Korean: ${profile.learningPreference.preferKorean}
+                    
+                    Return List<LearningResource> with:
+                    - type: "DOCUMENTATION", "TUTORIAL", "VIDEO", "BOOK", "PRACTICE"
+                    - title: Resource title
+                    - url: URL if available, null otherwise
+                    - description: Why this resource is helpful (1-2 sentences)
+                    
+                    Prioritize free, beginner-friendly resources.
+                    Include Korean resources if available and preferred.
+                    """.trimIndent()
+                )
+            
+            EnrichedStep(
+                order = step.order,
+                title = step.title,
+                description = step.description,
+                estimatedHours = step.estimatedHours,
+                prerequisites = step.prerequisites,
+                keyTopics = step.keyTopics,
+                learningResources = resources
+            )
+        }
+        
+        return EnrichedCurriculum(steps)
+    }
+    
+    @Action
+    fun finalizeDetailedPlan(
+        profile: MemberProfile,
+        techContext: DeepTechContext,
+        enrichedCurriculum: EnrichedCurriculum,
+        gapAnalysis: DetailedGapAnalysis,
+        request: LearningRequest
+    ): GeneratedLearningPlan {
+        logger.info("Finalizing detailed plan for member: {} / technology: {}", 
+            profile.memberId, techContext.technologyKey)
+        
+        val totalHours = enrichedCurriculum.steps.sumOf { it.estimatedHours }
+        val weeklyHours = profile.weeklyCapacityMinutes / 60
+        val estimatedWeeks = (totalHours.toDouble() / weeklyHours).toInt().coerceAtLeast(1)
+        
+        val startDate = LocalDate.now()
+        val targetEndDate = startDate.plus(estimatedWeeks.toLong(), ChronoUnit.WEEKS)
+        
+        val description = buildString {
+            append("Comprehensive ${techContext.displayName} learning plan for ${profile.experienceLevel.name} developers. ")
+            append("Includes ${gapAnalysis.estimatedPrepWeeks} weeks of foundation building. ")
+            append("${enrichedCurriculum.steps.size} detailed steps with curated resources over $estimatedWeeks weeks.")
+        }
+        
+        return GeneratedLearningPlan(
+            memberId = profile.memberId,
+            targetTechnologyKey = request.targetTechnologyKey,
+            targetTechnologyName = techContext.displayName,
+            title = "Comprehensive ${techContext.displayName} Learning Path",
+            description = description,
+            totalEstimatedHours = totalHours,
+            startDate = startDate,
+            targetEndDate = targetEndDate,
+            steps = enrichedCurriculum.steps.map { step ->
+                GeneratedStep(
+                    order = step.order,
+                    title = step.title,
+                    description = step.description,
+                    estimatedHours = step.estimatedHours,
+                    keyTopics = step.keyTopics,
+                    resources = step.learningResources.map { 
+                        "${it.type}: ${it.title}${it.url?.let { url -> " ($url)" } ?: ""}"
+                    }
+                )
+            },
+            metadata = PlanMetadata(
+                generatedPath = "DETAILED",
+                llmModel = "GPT-4o-mini",
+                estimatedCost = 0.30,
+                generationTimeSeconds = 900,
+                analysisDepth = "COMPREHENSIVE",
+                gapAnalysisPerformed = true,
+                resourcesEnriched = true
+            )
+        )
+    }
+    
+    @Condition
+    fun needsDetailedPath(profile: MemberProfile): Boolean {
+        val needs = profile.experienceLevel == ExperienceLevel.BEGINNER ||
+                !hasSufficientSkills(profile)
+        
+        logger.debug("needsDetailedPath for member {}: {}", profile.memberId, needs)
+        
+        return needs
+    }
 }
