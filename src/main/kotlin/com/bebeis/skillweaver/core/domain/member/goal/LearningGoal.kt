@@ -1,5 +1,6 @@
 package com.bebeis.skillweaver.core.domain.member.goal
 
+import com.bebeis.skillweaver.core.domain.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -35,8 +36,12 @@ class LearningGoal(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    val priority: GoalPriority = GoalPriority.MEDIUM
-) {
+    val priority: GoalPriority = GoalPriority.MEDIUM,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    val status: GoalStatus = GoalStatus.ACTIVE
+) : BaseEntity() {
     init {
         require(title.isNotBlank()) { "제목은 비어있을 수 없습니다." }
         require(description.isNotBlank()) { "설명은 비어있을 수 없습니다." }

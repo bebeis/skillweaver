@@ -1,5 +1,6 @@
 package com.bebeis.skillweaver.core.domain.technology
 
+import com.bebeis.skillweaver.core.domain.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -35,4 +36,4 @@ class Technology(
 
     @Column(nullable = false)
     val active: Boolean = true
-)
+) : BaseEntity()

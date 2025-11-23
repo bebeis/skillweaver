@@ -1,5 +1,6 @@
 package com.bebeis.skillweaver.core.domain.member
 
+import com.bebeis.skillweaver.core.domain.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
@@ -35,7 +36,7 @@ class Member(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
     val memberId: Long? = null,
-) {
+) : BaseEntity() {
 
     // TODO: embabel tool로 노출
     fun weeklyCapacityMinutes(): Int {

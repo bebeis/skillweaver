@@ -1,5 +1,6 @@
 package com.bebeis.skillweaver.core.domain.technology
 
+import com.bebeis.skillweaver.core.domain.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -32,4 +33,4 @@ class TechnologyKnowledge(
     @Enumerated(EnumType.STRING)
     @Column(name = "source_type", nullable = false, length = 20)
     val sourceType: KnowledgeSource = KnowledgeSource.COMMUNITY
-)
+) : BaseEntity()

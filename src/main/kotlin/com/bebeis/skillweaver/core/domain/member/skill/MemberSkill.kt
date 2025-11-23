@@ -1,5 +1,6 @@
 package com.bebeis.skillweaver.core.domain.member.skill
 
+import com.bebeis.skillweaver.core.domain.BaseEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -41,7 +42,7 @@ class MemberSkill(
     @Lob
     @Column(columnDefinition = "TEXT")
     val note: String? = null
-) {
+) : BaseEntity() {
     init {
         require(technologyId != null || !customName.isNullOrBlank()) {
             "technologyId 또는 customName 중 하나는 반드시 제공되어야 합니다."
