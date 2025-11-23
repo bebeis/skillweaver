@@ -9,3 +9,5 @@ inline fun notFound(errorCode: ErrorCode): Nothing = throw ResourceNotFoundExcep
 inline fun unauthorized(message: String): Nothing = throw AuthenticationException(message)
 
 inline fun conflict(message: String): Nothing = throw DuplicateResourceException(message)
+
+inline fun badRequest(message: String): Nothing = throw BusinessException(ErrorCode.INVALID_REQUEST, message)
