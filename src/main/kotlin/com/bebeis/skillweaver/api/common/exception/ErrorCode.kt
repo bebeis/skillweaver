@@ -17,9 +17,13 @@ enum class ErrorCode(
     
     NOT_FOUND("NOT_FOUND", "요청한 리소스를 찾을 수 없습니다"),
     MEMBER_NOT_FOUND("MEMBER_NOT_FOUND", "회원을 찾을 수 없습니다"),
+    TECHNOLOGY_NOT_FOUND("TECHNOLOGY_NOT_FOUND", "기술을 찾을 수 없습니다"),
+    MEMBER_SKILL_NOT_FOUND("MEMBER_SKILL_NOT_FOUND", "회원 기술을 찾을 수 없습니다"),
     
     CONFLICT("CONFLICT", "중복된 데이터가 존재합니다"),
     EMAIL_ALREADY_EXISTS("EMAIL_ALREADY_EXISTS", "이미 사용 중인 이메일입니다"),
+    TECHNOLOGY_KEY_ALREADY_EXISTS("TECHNOLOGY_KEY_ALREADY_EXISTS", "이미 사용 중인 기술 키입니다"),
+    MEMBER_SKILL_ALREADY_EXISTS("MEMBER_SKILL_ALREADY_EXISTS", "이미 등록된 회원 기술입니다"),
     
     INTERNAL_SERVER_ERROR("INTERNAL_SERVER_ERROR", "서버 내부 오류가 발생했습니다"),
     
