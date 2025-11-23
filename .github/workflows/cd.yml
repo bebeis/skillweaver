@@ -1,0 +1,123 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_TAG: ${{ github.sha }}
+  APP_DIR: skillweaver
+  CONTAINER_NAME: skillweaver
+  SPRING_PROFILES_ACTIVE: prod
+  SPRING_JPA_HIBERNATE_DDL_AUTO: update
+  SERVER_PORT: 8080
+  EC2_HOST: ${{ secrets.EC2_HOST }}
+  EC2_USER: ${{ secrets.EC2_USER }}
+  SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+  SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+  SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+  SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+  GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency: cd-ec2-skillweaver
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare image metadata
+        run: |
+          IMAGE_NAME_LOWER=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          echo "IMAGE_NAME_LOWER=$IMAGE_NAME_LOWER" >> $GITHUB_ENV
+          echo "IMAGE_URI=${REGISTRY}/${IMAGE_NAME_LOWER}:${IMAGE_TAG}" >> $GITHUB_ENV
+          echo "IMAGE_URI_LATEST=${REGISTRY}/${IMAGE_NAME_LOWER}:latest" >> $GITHUB_ENV
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.IMAGE_URI }}
+            ${{ env.IMAGE_URI_LATEST }}
+          platforms: linux/amd64
+
+      - name: Prepare deployment env file
+        run: |
+          mkdir -p deploy
+          cat > deploy/.env <<EOF
+SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
+JWT_SECRET=${JWT_SECRET}
+SERVER_PORT=${SERVER_PORT}
+EOF
+
+      - name: Configure SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
+
+      - name: Trust EC2 host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload env file
+        run: |
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "mkdir -p ${APP_DIR}"
+          scp -o StrictHostKeyChecking=no deploy/.env $EC2_USER@$EC2_HOST:${APP_DIR}/.env
+
+      - name: Deploy container on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST <<EOF
+set -e
+APP_DIR=${APP_DIR}
+CONTAINER_NAME=${CONTAINER_NAME}
+IMAGE_URI=${IMAGE_URI}
+IMAGE_URI_LATEST=${IMAGE_URI_LATEST}
+SERVER_PORT=${SERVER_PORT}
+GHCR_USERNAME=${GHCR_USERNAME}
+GHCR_TOKEN=${GHCR_TOKEN}
+APP_HOME="\$HOME/\$APP_DIR"
+
+mkdir -p "\$APP_HOME"
+cd "\$APP_HOME"
+
+if [ -n "\$GHCR_TOKEN" ] && [ -n "\$GHCR_USERNAME" ]; then
+  echo "\$GHCR_TOKEN" | docker login ghcr.io -u "\$GHCR_USERNAME" --password-stdin
+fi
+
+docker pull "\$IMAGE_URI"
+docker tag "\$IMAGE_URI" "\$IMAGE_URI_LATEST"
+
+if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}\$"; then
+  docker stop "\$CONTAINER_NAME" || true
+  docker rm "\$CONTAINER_NAME" || true
+fi
+
+docker run -d --name "\$CONTAINER_NAME" --restart unless-stopped --env-file .env -p "\${SERVER_PORT}:\${SERVER_PORT}" "\$IMAGE_URI"
+EOF

@@ -1,28 +1,7 @@
 spring:
   application:
     name: skillweaver
-  
-  datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:skillweaver;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password:
-  
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-  
-  jpa:
-    hibernate:
-      ddl-auto: create
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        use_sql_comments: true
-    open-in-view: false
-  
+
   jackson:
     serialization:
       write-dates-as-timestamps: false
@@ -31,9 +10,9 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET:skillweaver-jwt-secret-key-for-development-only-change-in-production}
-  access-token-validity: 3600000 # 1 hour in milliseconds
-  refresh-token-validity: 604800000 # 7 days in milliseconds
-  refresh-cookie-name: SW_REFRESH
+  access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY:3600000}
+  refresh-token-validity: ${JWT_REFRESH_TOKEN_VALIDITY:604800000}
+  refresh-cookie-name: ${JWT_REFRESH_COOKIE_NAME:SW_REFRESH}
 
 logging:
   level:
@@ -42,3 +21,74 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:skillweaver;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:create}
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/skillweaver?characterEncoding=UTF-8&serverTimezone=UTC&rewriteBatchedStatements=true}
+    username: ${SPRING_DATASOURCE_USERNAME:skillweaver}
+    password: ${SPRING_DATASOURCE_PASSWORD:change-me}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/skillweaver?characterEncoding=UTF-8&serverTimezone=UTC&rewriteBatchedStatements=true}
+    username: ${SPRING_DATASOURCE_USERNAME:skillweaver}
+    password: ${SPRING_DATASOURCE_PASSWORD:change-me}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+    open-in-view: false
