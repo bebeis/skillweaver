@@ -46,7 +46,6 @@ class LearningPlanService(
         val savedPlan = learningPlanRepository.save(plan)
         logger.info("Learning plan created: ${savedPlan.learningPlanId}")
 
-        // 단계 저장
         val steps = request.steps.mapIndexed { index, stepRequest ->
             LearningStep(
                 learningPlanId = savedPlan.learningPlanId!!,
@@ -173,7 +172,6 @@ class LearningPlanService(
         learningStepRepository.save(updatedStep)
         logger.info("Learning step completed: $stepId")
 
-        // 진행률 업데이트
         val totalSteps = learningStepRepository.countByLearningPlanId(planId)
         val completedSteps = learningStepRepository.countByLearningPlanIdAndCompleted(planId, true)
         val newProgress = ((completedSteps.toDouble() / totalSteps) * 100).toInt()
@@ -210,11 +208,8 @@ class LearningPlanService(
             notFound(ErrorCode.LEARNING_PLAN_NOT_FOUND)
         }
 
-        // 단계 먼저 삭제
         val steps = learningStepRepository.findByLearningPlanIdOrderByOrder(planId)
         learningStepRepository.deleteAll(steps)
-
-        // 계획 삭제
         learningPlanRepository.delete(plan)
         logger.info("Learning plan deleted: $planId")
     }
@@ -271,7 +266,6 @@ class LearningPlanService(
         val savedPlan = learningPlanRepository.save(plan)
         logger.info("Agent-generated learning plan saved: ${savedPlan.learningPlanId}")
         
-        // Agent가 생성한 단계를 DB에 저장
         val steps = generatedPlan.steps.map { generatedStep ->
             LearningStep(
                 learningPlanId = savedPlan.learningPlanId!!,
