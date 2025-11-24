@@ -8,6 +8,7 @@ import com.bebeis.skillweaver.api.member.dto.MemberSkillResponse
 import com.bebeis.skillweaver.api.member.dto.UpdateMemberSkillRequest
 import com.bebeis.skillweaver.core.domain.member.skill.MemberSkill
 import com.bebeis.skillweaver.core.domain.member.skill.SkillLevel
+import com.bebeis.skillweaver.core.domain.technology.TechnologyCategory
 import com.bebeis.skillweaver.core.storage.member.MemberRepository
 import com.bebeis.skillweaver.core.storage.member.MemberSkillRepository
 import com.bebeis.skillweaver.core.storage.technology.TechnologyRepository
@@ -58,13 +59,18 @@ class MemberSkillService(
         return MemberSkillResponse.from(saved)
     }
 
-    fun getMemberSkills(memberId: Long): List<MemberSkillResponse> {
+    fun getMemberSkills(
+        memberId: Long, 
+        category: TechnologyCategory? = null, 
+        level: SkillLevel? = null
+    ): List<MemberSkillResponse> {
         // 회원 존재 확인
         if (!memberRepository.existsById(memberId)) {
             notFound(ErrorCode.MEMBER_NOT_FOUND)
         }
 
-        return memberSkillRepository.findByMemberId(memberId)
+        // Repository에서 Technology와 JOIN하여 필터링
+        return memberSkillRepository.findByMemberIdWithFilters(memberId, category, level)
             .map { MemberSkillResponse.from(it) }
     }
 

@@ -6,6 +6,7 @@ import com.bebeis.skillweaver.api.agent.dto.CreateAgentRunRequest
 import com.bebeis.skillweaver.api.common.ApiResponse
 import com.bebeis.skillweaver.core.domain.agent.AgentRunStatus
 import com.bebeis.skillweaver.core.domain.agent.AgentType
+import com.bebeis.skillweaver.core.domain.agent.SseEventType.AGENT_STARTED
 import com.bebeis.skillweaver.core.service.agent.AgentRunService
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.AgentProcess
@@ -55,7 +56,7 @@ class AgentStreamController(
                     SseEmitter.event()
                         .name("agent_started")
                         .data(AgentEventDto(
-                            type = "AGENT_STARTED",
+                            type = AGENT_STARTED,
                             agentRunId = agentRun.agentRunId!!,
                             message = "Agent 실행 시작",
                             timestamp = System.currentTimeMillis()
@@ -86,7 +87,7 @@ class AgentStreamController(
                     SseEmitter.event()
                         .name("planning_started")
                         .data(AgentEventDto(
-                            type = "PLANNING_STARTED",
+                            type = com.bebeis.skillweaver.core.domain.agent.SseEventType.PLANNING_STARTED,
                             agentRunId = runId,
                             message = "GOAP 경로 계획 중...",
                             timestamp = System.currentTimeMillis()
@@ -112,7 +113,7 @@ class AgentStreamController(
                     SseEmitter.event()
                         .name("agent_completed")
                         .data(AgentEventDto(
-                            type = "AGENT_COMPLETED",
+                            type = com.bebeis.skillweaver.core.domain.agent.SseEventType.AGENT_COMPLETED,
                             agentRunId = runId,
                             message = "Agent 실행 완료",
                             result = result,
@@ -128,7 +129,7 @@ class AgentStreamController(
                     SseEmitter.event()
                         .name("error")
                         .data(AgentEventDto(
-                            type = "ERROR",
+                            type = com.bebeis.skillweaver.core.domain.agent.SseEventType.ERROR,
                             message = "오류 발생: ${e.message}",
                             timestamp = System.currentTimeMillis()
                         ))
@@ -169,7 +170,7 @@ class AgentStreamController(
                                 SseEmitter.event()
                                     .name("action_executed")
                                     .data(AgentEventDto(
-                                        type = "ACTION_EXECUTED",
+                                        type = com.bebeis.skillweaver.core.domain.agent.SseEventType.ACTION_EXECUTED,
                                         agentRunId = agentRunId,
                                         actionName = actionName,
                                         message = "$actionName 실행 완료 (${duration}ms)",
@@ -187,7 +188,7 @@ class AgentStreamController(
                         SseEmitter.event()
                             .name("progress")
                             .data(AgentEventDto(
-                                type = "PROGRESS",
+                                type = com.bebeis.skillweaver.core.domain.agent.SseEventType.PROGRESS,
                                 agentRunId = agentRunId,
                                 message = "진행 중... (${lastHistorySize}개 액션 완료)",
                                 timestamp = System.currentTimeMillis()

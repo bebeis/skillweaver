@@ -7,6 +7,32 @@ spring:
       write-dates-as-timestamps: false
     deserialization:
       fail-on-unknown-properties: false
+  
+  # Spring AI MCP 클라이언트 설정
+  ai:
+    mcp:
+      client:
+        enabled: true
+        type: SYNC
+        stdio:
+          connections:
+            # GitHub MCP Server
+            github:
+              command: npx
+              args:
+                - "-y"
+                - "@modelcontextprotocol/server-github"
+              env:
+                GITHUB_PERSONAL_ACCESS_TOKEN: ${GITHUB_TOKEN:}
+            
+            # YouTube/Web Search MCP Server (Brave Search 기반)
+            youtube:
+              command: npx
+              args:
+                - "-y"
+                - "@modelcontextprotocol/server-brave-search"
+              env:
+                BRAVE_API_KEY: ${BRAVE_API_KEY:}
 
 jwt:
   secret: ${JWT_SECRET:skillweaver-jwt-secret-key-for-development-only-change-in-production}
@@ -21,6 +47,25 @@ logging:
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# Embabel Agent 설정
+embabel:
+  agent:
+    platform:
+      # LLM 모델 설정
+      models:
+        openai:
+          api-key: ${OPENAI_API_KEY:sk-your-openai-api-key}
+          # 재시도 및 백오프 설정
+          max-retries: 3
+          initial-backoff-ms: 1000
+      
+      # Agent 플랫폼 설정
+      autonomy:
+        agent-confidence-cut-off: 0.7
+      
+      scanning:
+        annotation: true
 
 ---
 spring:

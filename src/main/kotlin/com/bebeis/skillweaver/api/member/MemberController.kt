@@ -1,6 +1,7 @@
 package com.bebeis.skillweaver.api.member
 
 import com.bebeis.skillweaver.api.common.ApiResponse
+import com.bebeis.skillweaver.api.common.auth.AuthUser
 import com.bebeis.skillweaver.api.member.dto.MemberResponse
 import com.bebeis.skillweaver.api.member.dto.UpdateMemberRequest
 import com.bebeis.skillweaver.core.service.member.MemberService
@@ -15,8 +16,7 @@ class MemberController(
 ) {
 
     @GetMapping("/me")
-    fun getCurrentMember(@RequestHeader("X-Member-Id", required = false) memberId: Long?): ResponseEntity<ApiResponse<MemberResponse>> {
-        requireNotNull(memberId) { "회원 ID가 필요합니다" }
+    fun getCurrentMember(@AuthUser memberId: Long): ResponseEntity<ApiResponse<MemberResponse>> {
         val response = memberService.getMember(memberId)
         return ResponseEntity.ok(ApiResponse.success(response))
     }

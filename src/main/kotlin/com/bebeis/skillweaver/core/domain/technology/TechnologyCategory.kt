@@ -7,5 +7,8 @@ enum class TechnologyCategory {
     TOOL,
     DB,
     PLATFORM,
-    ETC
+    ETC,
+    DEVOPS,
+    API,
+    DATABASE
 }

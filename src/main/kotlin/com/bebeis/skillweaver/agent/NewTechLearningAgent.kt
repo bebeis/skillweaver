@@ -1,6 +1,7 @@
 package com.bebeis.skillweaver.agent
 
 import com.bebeis.skillweaver.agent.domain.*
+import com.bebeis.skillweaver.core.domain.learning.LearningPathType.DETAILED
 import com.bebeis.skillweaver.core.domain.member.ExperienceLevel
 import com.bebeis.skillweaver.core.domain.member.LearningStyle
 import com.bebeis.skillweaver.core.storage.member.MemberRepository
@@ -15,10 +16,12 @@ import com.embabel.agent.api.common.create
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.common.ai.model.LlmOptions
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 @Agent(description = "Generate personalized learning plan for new technology")
+@Component
 class NewTechLearningAgent(
     private val memberRepository: MemberRepository,
     private val technologyRepository: TechnologyRepository,
@@ -55,7 +58,9 @@ class NewTechLearningAgent(
         )
     }
     
-    @Action
+    @Action(
+        toolGroups = [CoreToolGroups.WEB]
+    )
     @Condition("hasSufficientSkills || prefersFastPlan")
     fun quickAnalysis(
         profile: MemberProfile,
@@ -71,22 +76,20 @@ class NewTechLearningAgent(
             .withLlm(gpt4oMini)
             .create(
                 prompt = """
-                Provide a quick analysis of the technology: ${technology.displayName} (${technology.key})
+                Analyze the technology: ${technology.displayName} (${technology.key})
+                
+                Research:
+                - Latest version and updates
+                - Market demand and adoption trends
+                - Official documentation and learning resources
+                - Real-world use cases
                 
                 Member Profile:
                 - Experience Level: ${profile.experienceLevel.name}
                 - Target Track: ${profile.targetTrack.name}
                 - Current Skills: ${profile.currentSkillCount}
                 
-                Return a SimpleTechContext with:
-                - technologyKey: ${technology.key}
-                - displayName: ${technology.displayName}
-                - category: ${technology.category.name}
-                - briefDescription: A short description (2-3 sentences)
-                - estimatedLearningWeeks: Estimated weeks to learn (considering member's experience)
-                - difficultyLevel: "EASY", "MEDIUM", or "HARD" (relative to member's experience)
-                
-                Keep it brief and focus on essential information only.
+                Return a SimpleTechContext with brief, essential information.
                 """.trimIndent()
             )
     }
@@ -118,9 +121,15 @@ class NewTechLearningAgent(
         
         return context.ai()
             .withLlm(gpt4oMini)
+            .withTools(CoreToolGroups.WEB)
             .create(
                 prompt = """
                 Generate a QUICK learning curriculum for ${techContext.displayName}.
+                
+                Use web search to find:
+                - Latest best practices and learning resources
+                - Popular tutorials and documentation
+                - Community recommendations for fast learning
                 
                 Technology Info:
                 - Category: ${techContext.category}
@@ -192,7 +201,7 @@ class NewTechLearningAgent(
                 )
             },
             metadata = PlanMetadata(
-                generatedPath = "QUICK",
+                generatedPath = com.bebeis.skillweaver.core.domain.learning.LearningPathType.QUICK,
                 llmModel = "GPT-4o-mini",
                 estimatedCost = 0.05,
                 generationTimeSeconds = 180,
@@ -239,7 +248,12 @@ class NewTechLearningAgent(
         return prefers
     }
     
-    @Action
+    @Action(
+        toolGroups = [
+            CoreToolGroups.WEB,
+            "github"
+        ]
+    )
     @Condition("!prefersFastPlan")
     fun deepAnalysis(
         profile: MemberProfile,
@@ -255,27 +269,23 @@ class NewTechLearningAgent(
             .withLlm(gpt4oMini)
             .create(
                 prompt = """
-                Provide a DEEP analysis of the technology: ${technology.displayName} (${technology.key})
+                Perform comprehensive analysis of: ${technology.displayName} (${technology.key})
+                
+                Research:
+                - Latest version and release information
+                - Official repository and documentation
+                - Market demand and job trends
+                - Related technologies and ecosystem
+                - Common learning challenges and questions
+                - Typical use cases and applications
+                - Prerequisites and learning path
                 
                 Member Profile:
                 - Experience Level: ${profile.experienceLevel.name}
                 - Target Track: ${profile.targetTrack.name}
                 - Current Skills: ${profile.currentSkillCount}
                 
-                Return a DeepTechContext with:
-                - technologyKey: ${technology.key}
-                - displayName: ${technology.displayName}
-                - category: ${technology.category.name}
-                - detailedDescription: Comprehensive description (4-5 sentences)
-                - ecosystem: Main ecosystem it belongs to (e.g., "JVM", "JavaScript", "Python")
-                - prerequisites: List of prerequisite knowledge/technologies
-                - relatedTechnologies: List of complementary technologies
-                - commonUseCases: List of typical use cases
-                - estimatedLearningWeeks: Estimated weeks considering member's level
-                - difficultyLevel: "EASY", "MEDIUM", or "HARD"
-                - marketDemand: "LOW", "MEDIUM", "HIGH", or "VERY_HIGH"
-                
-                Provide thorough, accurate information for an INTERMEDIATE developer.
+                Return comprehensive DeepTechContext with accurate, thorough information.
                 """.trimIndent()
             )
     }
@@ -322,7 +332,7 @@ class NewTechLearningAgent(
     }
     
     @Action
-    @Condition("!prefersFastPlan")
+    @Condition("hasSufficientSkills && !prefersFastPlan")
     fun generateStandardCurriculum(
         profile: MemberProfile,
         techContext: DeepTechContext,
@@ -335,6 +345,7 @@ class NewTechLearningAgent(
         
         return context.ai()
             .withLlm(gpt4oMini)
+            .withTools(CoreToolGroups.WEB)
             .create(
                 prompt = """
                 Generate a STANDARD learning curriculum for ${techContext.displayName}.
@@ -424,7 +435,7 @@ class NewTechLearningAgent(
                 )
             },
             metadata = PlanMetadata(
-                generatedPath = "STANDARD",
+                generatedPath = com.bebeis.skillweaver.core.domain.learning.LearningPathType.STANDARD,
                 llmModel = "GPT-4o-mini",
                 estimatedCost = 0.15,
                 generationTimeSeconds = 480,
@@ -464,6 +475,7 @@ class NewTechLearningAgent(
         
         return context.ai()
             .withLlm(gpt4oMini)
+            .withTools(CoreToolGroups.WEB)
             .create(
                 prompt = """
                 Perform a DETAILED gap analysis for learning ${techContext.displayName}.
@@ -506,6 +518,7 @@ class NewTechLearningAgent(
         
         return context.ai()
             .withLlm(gpt4oMini)
+            .withTools(CoreToolGroups.WEB)
             .create(
                 prompt = """
                 Generate a DETAILED learning curriculum for ${techContext.displayName}.
@@ -551,7 +564,13 @@ class NewTechLearningAgent(
             )
     }
     
-    @Action
+    @Action(
+        toolGroups = [
+            CoreToolGroups.WEB,
+            "github",
+            "youtube"
+        ]
+    )
     @Condition("!hasSufficientSkills")
     fun enrichWithResources(
         curriculum: DetailedCurriculum,
@@ -566,21 +585,21 @@ class NewTechLearningAgent(
                 .withLlm(gpt4oMini)
                 .create<List<LearningResource>>(
                     prompt = """
-                    Suggest 3-5 learning resources for this step:
+                    Find 3-5 quality learning resources for this step:
                     
                     Step: ${step.title}
                     Topics: ${step.keyTopics.joinToString(", ")}
                     Technology: ${techContext.displayName}
-                    Prefers Korean: ${profile.learningPreference.preferKorean}
+                    Language Preference: ${if (profile.learningPreference.preferKorean) "Korean preferred" else "English"}
                     
-                    Return List<LearningResource> with:
-                    - type: "DOCUMENTATION", "TUTORIAL", "VIDEO", "BOOK", "PRACTICE"
-                    - title: Resource title
-                    - url: URL if available, null otherwise
-                    - description: Why this resource is helpful (1-2 sentences)
+                    Search for:
+                    - Official documentation and guides
+                    - Code examples and repositories
+                    - Tutorial videos and courses
+                    - Practice platforms
                     
-                    Prioritize free, beginner-friendly resources.
-                    Include Korean resources if available and preferred.
+                    Return List<LearningResource> with type, title, url, and helpful description.
+                    Prioritize free, high-quality resources suitable for ${profile.experienceLevel} level.
                     """.trimIndent()
                 )
             
@@ -644,7 +663,7 @@ class NewTechLearningAgent(
                 )
             },
             metadata = PlanMetadata(
-                generatedPath = "DETAILED",
+                generatedPath = DETAILED,
                 llmModel = "GPT-4o-mini",
                 estimatedCost = 0.30,
                 generationTimeSeconds = 900,

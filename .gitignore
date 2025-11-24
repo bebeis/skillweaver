@@ -81,7 +81,7 @@ replay_pid*
 # Kotlin Gradle plugin data, see https://kotlinlang.org/docs/whatsnew20.html#new-directory-for-kotlin-data-in-gradle-projects
 .kotlin/
 
-.env
+.env.local
 
 # Created by https://www.toptal.com/developers/gitignore/api/java,kotlin,intellij,macos,gradle
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,kotlin,intellij,macos,gradle

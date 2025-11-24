@@ -3,6 +3,7 @@ package com.bebeis.skillweaver.api.agent.dto
 import com.bebeis.skillweaver.core.domain.agent.AgentRun
 import com.bebeis.skillweaver.core.domain.agent.AgentRunStatus
 import com.bebeis.skillweaver.core.domain.agent.AgentType
+import com.bebeis.skillweaver.core.domain.agent.SseEventType
 import java.time.LocalDateTime
 
 data class AgentRunResponse(
@@ -63,7 +64,7 @@ data class AgentRunListResponse(
 }
 
 data class AgentEventDto(
-    val type: String,
+    val type: SseEventType,
     val agentRunId: Long? = null,
     val actionName: String? = null,
     val message: String? = null,

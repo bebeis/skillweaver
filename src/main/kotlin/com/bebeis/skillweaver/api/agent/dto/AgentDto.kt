@@ -1,5 +1,7 @@
 package com.bebeis.skillweaver.api.agent.dto
 
+import com.bebeis.skillweaver.core.domain.learning.LearningPathType
+
 data class CreateLearningPlanWithAgentRequest(
     val targetTechnologyKey: String
 )
@@ -17,7 +19,7 @@ data class AgentLearningPlanResponse(
 )
 
 data class GenerationMetadataResponse(
-    val generatedPath: String, // "QUICK", "STANDARD", "DETAILED"
+    val generatedPath: LearningPathType,
     val llmModel: String,
     val estimatedCost: Double,
     val generationTimeSeconds: Int,

@@ -13,10 +13,3 @@ data class EnrichedStep(
     val keyTopics: List<String>,
     val learningResources: List<LearningResource>
 )
-
-data class LearningResource(
-    val type: String,
-    val title: String,
-    val url: String?,
-    val description: String
-)

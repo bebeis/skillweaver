@@ -5,5 +5,6 @@ enum class TargetTrack {
     FRONTEND,
     FULLSTACK,
     MOBILE,
-    DATA
+    DATA,
+    DEVOPS
 }
