@@ -66,15 +66,15 @@ jobs:
       - name: Prepare deployment env file
         run: |
           mkdir -p deploy
-          cat > deploy/.env <<EOF
-SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
-SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}
-JWT_SECRET=${JWT_SECRET}
-SERVER_PORT=${SERVER_PORT}
-EOF
+          {
+            echo "SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}"
+            echo "SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}"
+            echo "SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}"
+            echo "SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}"
+            echo "SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO}"
+            echo "JWT_SECRET=${JWT_SECRET}"
+            echo "SERVER_PORT=${SERVER_PORT}"
+          } > deploy/.env
 
       - name: Configure SSH
         uses: webfactory/ssh-agent@v0.9.0
@@ -93,31 +93,31 @@ EOF
 
       - name: Deploy container on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST <<EOF
-set -e
-APP_DIR=${APP_DIR}
-CONTAINER_NAME=${CONTAINER_NAME}
-IMAGE_URI=${IMAGE_URI}
-IMAGE_URI_LATEST=${IMAGE_URI_LATEST}
-SERVER_PORT=${SERVER_PORT}
-GHCR_USERNAME=${GHCR_USERNAME}
-GHCR_TOKEN=${GHCR_TOKEN}
-APP_HOME="\$HOME/\$APP_DIR"
+          ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "
+            set -e
+            APP_DIR=${APP_DIR}
+            CONTAINER_NAME=${CONTAINER_NAME}
+            IMAGE_URI=${IMAGE_URI}
+            IMAGE_URI_LATEST=${IMAGE_URI_LATEST}
+            SERVER_PORT=${SERVER_PORT}
+            GHCR_USERNAME=${GHCR_USERNAME}
+            GHCR_TOKEN=${GHCR_TOKEN}
+            APP_HOME=\$HOME/\$APP_DIR
 
-mkdir -p "\$APP_HOME"
-cd "\$APP_HOME"
+            mkdir -p \"\$APP_HOME\"
+            cd \"\$APP_HOME\"
 
-if [ -n "\$GHCR_TOKEN" ] && [ -n "\$GHCR_USERNAME" ]; then
-  echo "\$GHCR_TOKEN" | docker login ghcr.io -u "\$GHCR_USERNAME" --password-stdin
-fi
+            if [ -n \"\$GHCR_TOKEN\" ] && [ -n \"\$GHCR_USERNAME\" ]; then
+              echo \"\$GHCR_TOKEN\" | docker login ghcr.io -u \"\$GHCR_USERNAME\" --password-stdin
+            fi
 
-docker pull "\$IMAGE_URI"
-docker tag "\$IMAGE_URI" "\$IMAGE_URI_LATEST"
+            docker pull \"\$IMAGE_URI\"
+            docker tag \"\$IMAGE_URI\" \"\$IMAGE_URI_LATEST\"
 
-if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}\$"; then
-  docker stop "\$CONTAINER_NAME" || true
-  docker rm "\$CONTAINER_NAME" || true
-fi
+            if docker ps -a --format '{{.Names}}' | grep -Eq \"^${CONTAINER_NAME}\$\"; then
+              docker stop \"\$CONTAINER_NAME\" || true
+              docker rm \"\$CONTAINER_NAME\" || true
+            fi
 
-docker run -d --name "\$CONTAINER_NAME" --restart unless-stopped --env-file .env -p "\${SERVER_PORT}:\${SERVER_PORT}" "\$IMAGE_URI"
-EOF
+            docker run -d --name \"\$CONTAINER_NAME\" --restart unless-stopped --env-file .env -p \"${SERVER_PORT}:${SERVER_PORT}\" \"\$IMAGE_URI\"
+          "
