@@ -1,14 +1,18 @@
 package com.bebeis.skillweaver.core.domain.member.skill
 
 import com.bebeis.skillweaver.core.domain.BaseEntity
+import com.bebeis.skillweaver.core.domain.technology.Technology
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.Lob
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.time.LocalDate
 
@@ -25,6 +29,10 @@ class MemberSkill(
 
     @Column(name = "technology_id")
     val technologyId: Long? = null,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "technology_id", insertable = false, updatable = false)
+    val technology: Technology? = null,
 
     @Column(name = "custom_name", length = 100)
     val customName: String? = null,
@@ -56,7 +64,7 @@ class MemberSkill(
      * 기술명을 반환 (Technology 참조 또는 customName)
      */
     fun getSkillName(): String {
-        return customName ?: "Technology#$technologyId"
+        return customName ?: technology?.displayName ?: "Technology#$technologyId"
     }
 
     override fun equals(other: Any?): Boolean {

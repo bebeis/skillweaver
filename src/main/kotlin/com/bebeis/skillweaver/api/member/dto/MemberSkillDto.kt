@@ -10,37 +10,39 @@ import java.time.LocalDateTime
  */
 data class MemberSkillResponse(
     val memberSkillId: Long,
-    val memberId: Long,
     val technologyId: Long?,
+    val technologyKey: String?,
+    val displayName: String?,
     val customName: String?,
-    val skillName: String,
     val level: SkillLevel,
     val yearsOfUse: Double,
     val lastUsedAt: LocalDate?,
     val note: String?,
-    val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
 ) {
     companion object {
         fun from(memberSkill: MemberSkill): MemberSkillResponse {
-            val skillName = memberSkill.customName ?: "Technology#${memberSkill.technologyId}"
-            
+            val technology = memberSkill.technology
             return MemberSkillResponse(
                 memberSkillId = memberSkill.memberSkillId!!,
-                memberId = memberSkill.memberId,
                 technologyId = memberSkill.technologyId,
+                technologyKey = technology?.key,
+                displayName = technology?.displayName,
                 customName = memberSkill.customName,
-                skillName = skillName,
                 level = memberSkill.level,
                 yearsOfUse = memberSkill.yearsOfUse,
                 lastUsedAt = memberSkill.lastUsedAt,
                 note = memberSkill.note,
-                createdAt = memberSkill.createdAt,
                 updatedAt = memberSkill.updatedAt
             )
         }
     }
 }
+
+data class MemberSkillListResponse(
+    val skills: List<MemberSkillResponse>,
+    val totalCount: Int
+)
 
 /**
  * 회원 스킬 추가 요청 DTO

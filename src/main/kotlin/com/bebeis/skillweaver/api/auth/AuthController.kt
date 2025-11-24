@@ -8,14 +8,16 @@ import com.bebeis.skillweaver.api.member.dto.RefreshTokenResponse
 import com.bebeis.skillweaver.api.member.dto.SignupRequest
 import com.bebeis.skillweaver.api.member.dto.SignupResponse
 import com.bebeis.skillweaver.core.service.member.AuthService
-import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.http.ResponseCookie
 import org.springframework.web.bind.annotation.*
+import java.time.Duration
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -40,13 +42,14 @@ class AuthController(
     ): ResponseEntity<ApiResponse<LoginResponse>> {
         val (loginResponse, refreshToken) = authService.login(request)
 
-        val refreshCookie = Cookie(jwtProperties.refreshCookieName, refreshToken).apply {
-            isHttpOnly = true
-            secure = false
-            path = "/"
-            maxAge = (jwtProperties.refreshTokenValidity / 1000).toInt()
-        }
-        httpResponse.addCookie(refreshCookie)
+        val refreshCookie = ResponseCookie.from(jwtProperties.refreshCookieName, refreshToken)
+            .httpOnly(true)
+            .secure(true)
+            .sameSite("Lax")
+            .path("/")
+            .maxAge(Duration.ofMillis(jwtProperties.refreshTokenValidity).seconds)
+            .build()
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString())
 
         return ResponseEntity.ok(ApiResponse.success(loginResponse, "로그인 성공"))
     }
@@ -74,13 +77,14 @@ class AuthController(
      */
     @PostMapping("/logout")
     fun logout(httpResponse: HttpServletResponse): ResponseEntity<Void> {
-        val refreshCookie = Cookie(jwtProperties.refreshCookieName, null).apply {
-            isHttpOnly = true
-            secure = true
-            path = "/"
-            maxAge = 0
-        }
-        httpResponse.addCookie(refreshCookie)
+        val deleteCookie = ResponseCookie.from(jwtProperties.refreshCookieName, "")
+            .httpOnly(true)
+            .secure(true)
+            .sameSite("Lax")
+            .path("/")
+            .maxAge(0)
+            .build()
+        httpResponse.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString())
 
         logger.info("User logged out successfully")
         return ResponseEntity.noContent().build()

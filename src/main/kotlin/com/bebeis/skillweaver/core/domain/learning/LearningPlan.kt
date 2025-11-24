@@ -35,6 +35,10 @@ class LearningPlan(
     @Column(name = "background_analysis", columnDefinition = "TEXT")
     val backgroundAnalysis: String? = null,
 
+    @Lob
+    @Column(name = "daily_schedule", columnDefinition = "TEXT")
+    val dailySchedule: String? = null,
+
     @Column(name = "started_at")
     val startedAt: LocalDateTime? = null
 ) : BaseEntity() {

@@ -14,6 +14,8 @@ data class GeneratedLearningPlan(
     val startDate: LocalDate,
     val targetEndDate: LocalDate,
     val steps: List<GeneratedStep>,
+    val backgroundAnalysis: BackgroundAnalysis? = null,
+    val dailySchedule: List<DailyScheduleItem> = emptyList(),
     val metadata: PlanMetadata
 )
 
@@ -23,7 +25,7 @@ data class GeneratedStep(
     val description: String,
     val estimatedHours: Int,
     val keyTopics: List<String>,
-    val resources: List<String> = emptyList()
+    val resources: List<LearningResource> = emptyList()
 )
 
 data class LearningResource(

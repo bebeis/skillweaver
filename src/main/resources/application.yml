@@ -33,6 +33,13 @@ spring:
                 - "@modelcontextprotocol/server-brave-search"
               env:
                 BRAVE_API_KEY: ${BRAVE_API_KEY:}
+            tavily:
+              command: npx
+              args:
+                - "-y"
+                - "tavily-mcp@latest"
+              env:
+                TAVILY_API_KEY: ${TAVILY_API_KEY:}
 
 jwt:
   secret: ${JWT_SECRET:skillweaver-jwt-secret-key-for-development-only-change-in-production}

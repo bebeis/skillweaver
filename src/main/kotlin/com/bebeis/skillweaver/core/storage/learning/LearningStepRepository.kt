@@ -10,4 +10,5 @@ interface LearningStepRepository : JpaRepository<LearningStep, Long> {
     fun findByLearningPlanIdAndCompleted(learningPlanId: Long, completed: Boolean): List<LearningStep>
     fun countByLearningPlanId(learningPlanId: Long): Int
     fun countByLearningPlanIdAndCompleted(learningPlanId: Long, completed: Boolean): Int
+    fun findByLearningPlanIdAndOrder(learningPlanId: Long, order: Int): LearningStep?
 }

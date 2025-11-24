@@ -32,6 +32,9 @@ class AgentStreamControllerTest {
     @MockK
     private lateinit var objectMapper: ObjectMapper
 
+    @MockK(relaxed = true)
+    private lateinit var agentEventBroadcaster: AgentEventBroadcaster
+
     @InjectMockKs
     private lateinit var agentStreamController: AgentStreamController
 

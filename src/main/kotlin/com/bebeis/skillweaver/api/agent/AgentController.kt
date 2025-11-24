@@ -7,6 +7,7 @@ import com.bebeis.skillweaver.api.agent.dto.AgentLearningPlanResponse
 import com.bebeis.skillweaver.api.agent.dto.CreateLearningPlanWithAgentRequest
 import com.bebeis.skillweaver.api.agent.dto.GenerationMetadataResponse
 import com.bebeis.skillweaver.api.common.ApiResponse
+import com.bebeis.skillweaver.api.common.auth.AuthUser
 import com.bebeis.skillweaver.core.service.learning.LearningPlanService
 import com.embabel.agent.core.AgentPlatform
 import com.embabel.agent.core.ProcessOptions
@@ -25,8 +26,8 @@ class AgentController(
     
     @PostMapping
     fun createLearningPlanWithAgent(
-        @RequestBody request: CreateLearningPlanWithAgentRequest,
-        @RequestHeader("X-Member-Id") memberId: Long
+        @AuthUser memberId: Long,
+        @RequestBody request: CreateLearningPlanWithAgentRequest
     ): ApiResponse<AgentLearningPlanResponse> {
         logger.info("Starting agent-based learning plan creation for member: {} / technology: {}", 
             memberId, request.targetTechnologyKey)

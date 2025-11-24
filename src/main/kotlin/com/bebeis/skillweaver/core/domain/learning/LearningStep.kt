@@ -33,13 +33,20 @@ class LearningStep(
     @Column(nullable = false)
     val completed: Boolean = false,
 
-    @Lob
-    @Column(columnDefinition = "TEXT")
-    val objectives: String? = null,
+    @ElementCollection
+    @CollectionTable(
+        name = "learning_step_objective",
+        joinColumns = [JoinColumn(name = "step_id")]
+    )
+    @Column(name = "objective", columnDefinition = "TEXT", nullable = false)
+    val objectives: List<String> = emptyList(),
 
-    @Lob
-    @Column(name = "suggested_resources", columnDefinition = "TEXT")
-    val suggestedResources: String? = null
+    @ElementCollection
+    @CollectionTable(
+        name = "learning_step_resource",
+        joinColumns = [JoinColumn(name = "step_id")]
+    )
+    val suggestedResources: List<StepResource> = emptyList()
 ) {
     init {
         require(order > 0) { "순서는 0보다 커야 합니다." }
@@ -47,3 +54,19 @@ class LearningStep(
         require(title.isNotBlank()) { "제목은 비어있을 수 없습니다." }
     }
 }
+
+@Embeddable
+data class StepResource(
+    @Enumerated(EnumType.STRING)
+    @Column(name = "resource_type", nullable = false, length = 30)
+    val type: ResourceType,
+
+    @Column(name = "title", nullable = false, length = 200)
+    val title: String,
+
+    @Column(name = "url", nullable = false, length = 500)
+    val url: String,
+
+    @Column(name = "language", length = 20)
+    val language: String? = null
+)

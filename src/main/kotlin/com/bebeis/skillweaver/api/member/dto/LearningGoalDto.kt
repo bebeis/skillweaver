@@ -11,13 +11,11 @@ import java.time.LocalDateTime
  */
 data class LearningGoalResponse(
     val learningGoalId: Long,
-    val memberId: Long,
     val title: String,
     val description: String,
     val dueDate: LocalDate?,
     val priority: GoalPriority,
     val status: GoalStatus,
-    val isActive: Boolean,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime
 ) {
@@ -25,19 +23,22 @@ data class LearningGoalResponse(
         fun from(goal: LearningGoal): LearningGoalResponse {
             return LearningGoalResponse(
                 learningGoalId = goal.learningGoalId!!,
-                memberId = goal.memberId,
                 title = goal.title,
                 description = goal.description,
                 dueDate = goal.dueDate,
                 priority = goal.priority,
                 status = goal.status,
-                isActive = goal.isActive(),
                 createdAt = goal.createdAt,
                 updatedAt = goal.updatedAt
             )
         }
     }
 }
+
+data class LearningGoalListResponse(
+    val goals: List<LearningGoalResponse>,
+    val totalCount: Int
+)
 
 /**
  * 학습 목표 생성 요청 DTO

@@ -107,4 +107,9 @@ class AgentRunService(
     fun getRunByLearningPlan(learningPlanId: Long): AgentRun? {
         return agentRunRepository.findByLearningPlanId(learningPlanId)
     }
+
+    fun getRunById(agentRunId: Long): AgentRun {
+        return agentRunRepository.findById(agentRunId)
+            .orElseThrow { IllegalArgumentException("AgentRun not found: $agentRunId") }
+    }
 }

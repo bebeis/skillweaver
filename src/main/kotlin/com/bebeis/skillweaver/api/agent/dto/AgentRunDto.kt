@@ -70,5 +70,21 @@ data class AgentEventDto(
     val message: String? = null,
     val state: String? = null,
     val result: Any? = null,
-    val timestamp: Long
+    val executedPath: List<String>? = null,
+    val executedActions: List<ActionExecutionDto>? = null,
+    val replannedPath: List<String>? = null,
+    val retryCount: Int? = null,
+    val timestamp: Long,
+    val eventName: String? = null,
+    val sequence: Long? = null
 )
+
+data class ActionExecutionDto(
+    val name: String,
+    val status: ActionStatus = ActionStatus.COMPLETED,
+    val durationMs: Long? = null
+)
+
+enum class ActionStatus {
+    PLANNED, EXECUTING, COMPLETED, FAILED
+}

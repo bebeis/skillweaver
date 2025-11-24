@@ -36,13 +36,9 @@ class LearningPlanController(
         @RequestParam(required = false) status: LearningPlanStatus?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "20") size: Int
-    ): ResponseEntity<ApiResponse<List<LearningPlanResponse>>> {
+    ): ResponseEntity<ApiResponse<LearningPlanListResponse>> {
         require(authMemberId == memberId) { "본인의 학습 플랜만 조회할 수 있습니다" }
-        val response = if (status != null) {
-            learningPlanService.getPlansByStatus(memberId, status)
-        } else {
-            learningPlanService.getPlansByMemberId(memberId)
-        }
+        val response = learningPlanService.getPlans(memberId, status, page, size)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
@@ -69,15 +65,15 @@ class LearningPlanController(
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
-    @PostMapping("/{planId}/steps/{stepId}/complete")
+    @PostMapping("/{planId}/steps/{stepOrder}/complete")
     fun completeStep(
         @AuthUser authMemberId: Long,
         @PathVariable memberId: Long,
         @PathVariable planId: Long,
-        @PathVariable stepId: Long
+        @PathVariable stepOrder: Int
     ): ResponseEntity<ApiResponse<LearningPlanResponse>> {
         require(authMemberId == memberId) { "본인의 학습 플랜만 수정할 수 있습니다" }
-        val response = learningPlanService.completeStep(memberId, planId, stepId)
+        val response = learningPlanService.completeStep(memberId, planId, stepOrder)
         return ResponseEntity.ok(ApiResponse.success(response))
     }
 
@@ -90,6 +86,18 @@ class LearningPlanController(
         require(authMemberId == memberId) { "본인의 학습 플랜만 조회할 수 있습니다" }
         val response = learningPlanService.getProgress(memberId, planId)
         return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    @PatchMapping("/{planId}/progress")
+    fun updateProgress(
+        @AuthUser authMemberId: Long,
+        @PathVariable memberId: Long,
+        @PathVariable planId: Long,
+        @Valid @RequestBody request: UpdatePlanProgressRequest
+    ): ResponseEntity<ApiResponse<PlanProgressUpdateResponse>> {
+        require(authMemberId == memberId) { "본인의 학습 플랜만 수정할 수 있습니다" }
+        val response = learningPlanService.updateProgress(memberId, planId, request)
+        return ResponseEntity.ok(ApiResponse.success(response, "진행도가 업데이트되었습니다."))
     }
 
     @DeleteMapping("/{planId}")

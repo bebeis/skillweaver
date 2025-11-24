@@ -14,7 +14,7 @@ interface MemberSkillRepository : JpaRepository<MemberSkill, Long> {
     
     @Query("""
         SELECT ms FROM MemberSkill ms
-        LEFT JOIN Technology t ON ms.technologyId = t.technologyId
+        LEFT JOIN FETCH ms.technology t
         WHERE ms.memberId = :memberId
         AND (:category IS NULL OR t.category = :category)
         AND (:level IS NULL OR ms.level = :level)

@@ -44,9 +44,14 @@ class MemberSkillService(
             }
         }
 
+        val technology = request.technologyId?.let { techId ->
+            technologyRepository.getReferenceById(techId)
+        }
+
         val memberSkill = MemberSkill(
             memberId = memberId,
             technologyId = request.technologyId,
+            technology = technology,
             customName = request.customName,
             level = request.level,
             yearsOfUse = request.yearsOfUse,
@@ -104,6 +109,7 @@ class MemberSkillService(
             memberSkillId = memberSkill.memberSkillId,
             memberId = memberSkill.memberId,
             technologyId = memberSkill.technologyId,
+            technology = memberSkill.technology,
             customName = memberSkill.customName,
             level = request.level ?: memberSkill.level,
             yearsOfUse = request.yearsOfUse ?: memberSkill.yearsOfUse,

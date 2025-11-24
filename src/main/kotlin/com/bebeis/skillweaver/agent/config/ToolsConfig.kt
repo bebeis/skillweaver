@@ -1,5 +1,6 @@
 package com.bebeis.skillweaver.agent.config
 
+import com.embabel.agent.core.CoreToolGroups
 import com.embabel.agent.core.ToolGroup
 import com.embabel.agent.core.ToolGroupDescription
 import com.embabel.agent.core.ToolGroupPermission
@@ -12,6 +13,34 @@ import org.springframework.context.annotation.Configuration
 class ToolsConfig(
     private val mcpSyncClients: List<McpSyncClient>,
 ) {
+
+    /**
+     * 웹 검색용 MCP Tool Group (Brave/Tavily 등)
+     * - Brave가 rate limit에 걸릴 경우 Tavily를 통한 대체 검색 가능
+     */
+    @Bean
+    fun mcpWebSearchToolsGroup(): ToolGroup {
+        return McpToolGroup(
+            description = CoreToolGroups.WEB_DESCRIPTION,
+            name = "websearch-mcp",
+            provider = "Docker",
+            permissions = setOf(
+                ToolGroupPermission.INTERNET_ACCESS
+            ),
+            clients = mcpSyncClients,
+            filter = {
+                val name = it.toolDefinition.name().lowercase()
+                val isBrave = name.contains("brave")
+                val isTavily = name.contains("tavily")
+                val isWebSearch = name.contains("web_search") ||
+                    name.contains("web-search") ||
+                    (name.contains("search") && name.contains("web"))
+                // Prefer Tavily to avoid Brave rate limits; keep other non-Brave web-search tools as fallback
+                // (Brave is excluded from this group).
+                isTavily || (isWebSearch && !isBrave)
+            },
+        )
+    }
 
     /**
      * GitHub 저장소 검색 및 코드 예제 수집을 위한 MCP Tool Group
@@ -34,8 +63,8 @@ class ToolsConfig(
             clients = mcpSyncClients,
             filter = {
                 it.toolDefinition.name().contains("github", ignoreCase = true) ||
-                it.toolDefinition.name().contains("repository", ignoreCase = true) ||
-                it.toolDefinition.name().contains("search_code", ignoreCase = true)
+                    it.toolDefinition.name().contains("repository", ignoreCase = true) ||
+                    it.toolDefinition.name().contains("search_code", ignoreCase = true)
             },
         )
     }
@@ -61,7 +90,7 @@ class ToolsConfig(
             clients = mcpSyncClients,
             filter = {
                 it.toolDefinition.name().contains("youtube", ignoreCase = true) ||
-                it.toolDefinition.name().contains("video", ignoreCase = true)
+                    it.toolDefinition.name().contains("video", ignoreCase = true)
             },
         )
     }

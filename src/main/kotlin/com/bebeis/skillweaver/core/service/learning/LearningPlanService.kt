@@ -1,17 +1,23 @@
 package com.bebeis.skillweaver.core.service.learning
 
+import com.bebeis.skillweaver.agent.domain.DailyScheduleItem
 import com.bebeis.skillweaver.agent.domain.GeneratedLearningPlan
+import com.bebeis.skillweaver.api.common.dto.PaginationResponse
 import com.bebeis.skillweaver.api.common.exception.ErrorCode
 import com.bebeis.skillweaver.api.common.exception.notFound
 import com.bebeis.skillweaver.api.plan.dto.*
+import com.bebeis.skillweaver.api.plan.dto.toStepResource
 import com.bebeis.skillweaver.core.domain.learning.LearningPlan
 import com.bebeis.skillweaver.core.domain.learning.LearningPlanStatus
 import com.bebeis.skillweaver.core.domain.learning.LearningStep
 import com.bebeis.skillweaver.core.domain.learning.StepDifficulty
+import com.bebeis.skillweaver.core.domain.learning.StepResource
 import com.bebeis.skillweaver.core.storage.learning.LearningPlanRepository
 import com.bebeis.skillweaver.core.storage.learning.LearningStepRepository
 import com.bebeis.skillweaver.core.storage.member.MemberRepository
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -22,7 +28,8 @@ import java.time.temporal.ChronoUnit
 class LearningPlanService(
     private val learningPlanRepository: LearningPlanRepository,
     private val learningStepRepository: LearningStepRepository,
-    private val memberRepository: MemberRepository
+    private val memberRepository: MemberRepository,
+    private val objectMapper: ObjectMapper
 ) {
     private val logger = LoggerFactory.getLogger(LearningPlanService::class.java)
 
@@ -40,6 +47,7 @@ class LearningPlanService(
             status = LearningPlanStatus.ACTIVE,
             progress = 0,
             backgroundAnalysis = request.backgroundAnalysis,
+            dailySchedule = serializeDailySchedule(request.dailySchedule),
             startedAt = LocalDateTime.now()
         )
 
@@ -56,36 +64,42 @@ class LearningPlanService(
                 difficulty = stepRequest.difficulty,
                 completed = false,
                 objectives = stepRequest.objectives,
-                suggestedResources = stepRequest.suggestedResources
+                suggestedResources = stepRequest.suggestedResources.map { it.toStepResource() }
             )
         }
 
         val savedSteps = learningStepRepository.saveAll(steps)
         logger.info("${savedSteps.size} learning steps created for plan ${savedPlan.learningPlanId}")
 
-        return LearningPlanResponse.from(savedPlan, savedSteps)
+        return LearningPlanResponse.from(savedPlan, savedSteps, objectMapper)
     }
 
-    fun getPlansByMemberId(memberId: Long): List<LearningPlanResponse> {
+    fun getPlans(
+        memberId: Long,
+        status: LearningPlanStatus?,
+        page: Int,
+        size: Int
+    ): LearningPlanListResponse {
         if (!memberRepository.existsById(memberId)) {
             notFound(ErrorCode.MEMBER_NOT_FOUND)
         }
 
-        return learningPlanRepository.findByMemberId(memberId).map { plan ->
-            val steps = learningStepRepository.findByLearningPlanIdOrderByOrder(plan.learningPlanId!!)
-            LearningPlanResponse.from(plan, steps)
-        }
-    }
-
-    fun getPlansByStatus(memberId: Long, status: LearningPlanStatus): List<LearningPlanResponse> {
-        if (!memberRepository.existsById(memberId)) {
-            notFound(ErrorCode.MEMBER_NOT_FOUND)
+        val pageable = PageRequest.of(page.coerceAtLeast(0), size.coerceAtLeast(1))
+        val planPage = if (status != null) {
+            learningPlanRepository.findByMemberIdAndStatus(memberId, status, pageable)
+        } else {
+            learningPlanRepository.findByMemberId(memberId, pageable)
         }
 
-        return learningPlanRepository.findByMemberIdAndStatus(memberId, status).map { plan ->
-            val steps = learningStepRepository.findByLearningPlanIdOrderByOrder(plan.learningPlanId!!)
-            LearningPlanResponse.from(plan, steps)
-        }
+        return LearningPlanListResponse(
+            plans = planPage.content.map { LearningPlanSummaryResponse.from(it) },
+            pagination = PaginationResponse(
+                page = planPage.number,
+                size = planPage.size,
+                totalElements = planPage.totalElements,
+                totalPages = planPage.totalPages
+            )
+        )
     }
 
     fun getPlanById(memberId: Long, planId: Long): LearningPlanResponse {
@@ -101,7 +115,7 @@ class LearningPlanService(
         }
 
         val steps = learningStepRepository.findByLearningPlanIdOrderByOrder(planId)
-        return LearningPlanResponse.from(plan, steps)
+        return LearningPlanResponse.from(plan, steps, objectMapper)
     }
 
     @Transactional
@@ -126,6 +140,7 @@ class LearningPlanService(
             status = request.status,
             progress = plan.progress,
             backgroundAnalysis = plan.backgroundAnalysis,
+            dailySchedule = plan.dailySchedule,
             startedAt = plan.startedAt
         )
 
@@ -133,11 +148,11 @@ class LearningPlanService(
         logger.info("Learning plan status updated: ${saved.learningPlanId} -> ${request.status}")
 
         val steps = learningStepRepository.findByLearningPlanIdOrderByOrder(planId)
-        return LearningPlanResponse.from(saved, steps)
+        return LearningPlanResponse.from(saved, steps, objectMapper)
     }
 
     @Transactional
-    fun completeStep(memberId: Long, planId: Long, stepId: Long): LearningPlanResponse {
+    fun completeStep(memberId: Long, planId: Long, stepOrder: Int): LearningPlanResponse {
         if (!memberRepository.existsById(memberId)) {
             notFound(ErrorCode.MEMBER_NOT_FOUND)
         }
@@ -149,12 +164,8 @@ class LearningPlanService(
             notFound(ErrorCode.LEARNING_PLAN_NOT_FOUND)
         }
 
-        val step = learningStepRepository.findById(stepId).orElse(null)
+        val step = learningStepRepository.findByLearningPlanIdAndOrder(planId, stepOrder)
             ?: notFound(ErrorCode.LEARNING_STEP_NOT_FOUND)
-
-        if (step.learningPlanId != planId) {
-            notFound(ErrorCode.LEARNING_STEP_NOT_FOUND)
-        }
 
         val updatedStep = LearningStep(
             stepId = step.stepId,
@@ -170,7 +181,7 @@ class LearningPlanService(
         )
 
         learningStepRepository.save(updatedStep)
-        logger.info("Learning step completed: $stepId")
+        logger.info("Learning step completed: plan=$planId, stepOrder=$stepOrder")
 
         val totalSteps = learningStepRepository.countByLearningPlanId(planId)
         val completedSteps = learningStepRepository.countByLearningPlanIdAndCompleted(planId, true)
@@ -185,6 +196,7 @@ class LearningPlanService(
             status = if (newProgress == 100) LearningPlanStatus.COMPLETED else plan.status,
             progress = newProgress,
             backgroundAnalysis = plan.backgroundAnalysis,
+            dailySchedule = plan.dailySchedule,
             startedAt = plan.startedAt
         )
 
@@ -192,7 +204,7 @@ class LearningPlanService(
         logger.info("Learning plan progress updated: ${savedPlan.learningPlanId} -> $newProgress%")
 
         val steps = learningStepRepository.findByLearningPlanIdOrderByOrder(planId)
-        return LearningPlanResponse.from(savedPlan, steps)
+        return LearningPlanResponse.from(savedPlan, steps, objectMapper)
     }
 
     @Transactional
@@ -240,6 +252,62 @@ class LearningPlanService(
             steps = steps.map { StepProgressResponse.from(it) }
         )
     }
+
+    private fun serializeDailySchedule(dailySchedule: List<DailyScheduleItemRequest>): String? {
+        if (dailySchedule.isEmpty()) return null
+        return objectMapper.writeValueAsString(dailySchedule)
+    }
+    
+    private fun serializeBackgroundAnalysis(generatedPlan: GeneratedLearningPlan): String? {
+        return generatedPlan.backgroundAnalysis?.let { objectMapper.writeValueAsString(it) }
+            ?: generatedPlan.description
+    }
+
+    private fun serializeAgentDailySchedule(dailySchedule: List<DailyScheduleItem>): String? {
+        if (dailySchedule.isEmpty()) return null
+        return objectMapper.writeValueAsString(dailySchedule)
+    }
+
+    @Transactional
+    fun updateProgress(
+        memberId: Long,
+        planId: Long,
+        request: UpdatePlanProgressRequest
+    ): PlanProgressUpdateResponse {
+        if (!memberRepository.existsById(memberId)) {
+            notFound(ErrorCode.MEMBER_NOT_FOUND)
+        }
+
+        val plan = learningPlanRepository.findById(planId).orElse(null)
+            ?: notFound(ErrorCode.LEARNING_PLAN_NOT_FOUND)
+
+        if (plan.memberId != memberId) {
+            notFound(ErrorCode.LEARNING_PLAN_NOT_FOUND)
+        }
+
+        val updatedPlan = LearningPlan(
+            learningPlanId = plan.learningPlanId,
+            memberId = plan.memberId,
+            targetTechnology = plan.targetTechnology,
+            totalWeeks = plan.totalWeeks,
+            totalHours = plan.totalHours,
+            status = request.status,
+            progress = request.progress,
+            backgroundAnalysis = plan.backgroundAnalysis,
+            dailySchedule = plan.dailySchedule,
+            startedAt = plan.startedAt
+        )
+
+        val saved = learningPlanRepository.save(updatedPlan)
+        logger.info("Learning plan progress manually updated: ${saved.learningPlanId} -> ${request.progress}%")
+
+        return PlanProgressUpdateResponse(
+            learningPlanId = saved.learningPlanId!!,
+            progress = saved.progress,
+            status = saved.status,
+            updatedAt = saved.updatedAt
+        )
+    }
     
     @Transactional
     fun createPlanFromAgent(generatedPlan: GeneratedLearningPlan): LearningPlan {
@@ -259,7 +327,8 @@ class LearningPlanService(
             totalHours = generatedPlan.totalEstimatedHours,
             status = LearningPlanStatus.ACTIVE,
             progress = 0,
-            backgroundAnalysis = generatedPlan.description,
+            backgroundAnalysis = serializeBackgroundAnalysis(generatedPlan),
+            dailySchedule = serializeAgentDailySchedule(generatedPlan.dailySchedule),
             startedAt = generatedPlan.startDate.atStartOfDay()
         )
         
@@ -275,8 +344,15 @@ class LearningPlanService(
                 estimatedHours = generatedStep.estimatedHours,
                 difficulty = estimateDifficulty(generatedStep.estimatedHours),
                 completed = false,
-                objectives = generatedStep.keyTopics.joinToString(", "),
-                suggestedResources = generatedStep.resources.joinToString(", ")
+                objectives = generatedStep.keyTopics,
+                suggestedResources = generatedStep.resources.map {
+                    StepResource(
+                        type = it.type,
+                        title = it.title,
+                        url = it.url,
+                        language = it.language
+                    )
+                }
             )
         }
         

@@ -2,7 +2,8 @@ package com.bebeis.skillweaver.api.technology
 
 import com.bebeis.skillweaver.api.common.ApiResponse
 import com.bebeis.skillweaver.api.technology.dto.CreateTechnologyRequest
-import com.bebeis.skillweaver.api.technology.dto.TechnologyResponse
+import com.bebeis.skillweaver.api.technology.dto.TechnologyDetailResponse
+import com.bebeis.skillweaver.api.technology.dto.TechnologyListResponse
 import com.bebeis.skillweaver.api.technology.dto.UpdateTechnologyRequest
 import com.bebeis.skillweaver.core.domain.technology.TechnologyCategory
 import com.bebeis.skillweaver.core.service.technology.TechnologyService
@@ -20,7 +21,7 @@ class TechnologyController(
     @ResponseStatus(HttpStatus.CREATED)
     fun createTechnology(
         @Valid @RequestBody request: CreateTechnologyRequest
-    ): ApiResponse<TechnologyResponse> {
+    ): ApiResponse<TechnologyDetailResponse> {
         val response = technologyService.createTechnology(request)
         return ApiResponse.success(response, "기술이 등록되었습니다")
     }
@@ -28,7 +29,7 @@ class TechnologyController(
     @GetMapping("/{technologyId}")
     fun getTechnology(
         @PathVariable technologyId: Long
-    ): ApiResponse<TechnologyResponse> {
+    ): ApiResponse<TechnologyDetailResponse> {
         val response = technologyService.getTechnology(technologyId)
         return ApiResponse.success(response)
     }
@@ -36,7 +37,7 @@ class TechnologyController(
     @GetMapping("/key/{key}")
     fun getTechnologyByKey(
         @PathVariable key: String
-    ): ApiResponse<TechnologyResponse> {
+    ): ApiResponse<TechnologyDetailResponse> {
         val response = technologyService.getTechnologyByKey(key)
         return ApiResponse.success(response)
     }
@@ -44,13 +45,13 @@ class TechnologyController(
     @GetMapping
     fun getAllTechnologies(
         @RequestParam(required = false) category: TechnologyCategory?,
-        @RequestParam(required = false, defaultValue = "false") activeOnly: Boolean
-    ): ApiResponse<List<TechnologyResponse>> {
-        val response = when {
-            category != null -> technologyService.getTechnologiesByCategory(category)
-            activeOnly -> technologyService.getActiveTechnologies()
-            else -> technologyService.getAllTechnologies()
-        }
+        @RequestParam(required = false) ecosystem: String?,
+        @RequestParam(required = false) active: Boolean?,
+        @RequestParam(required = false) search: String?,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "20") size: Int
+    ): ApiResponse<TechnologyListResponse> {
+        val response = technologyService.getTechnologies(category, ecosystem, active, search, page, size)
         return ApiResponse.success(response)
     }
 
@@ -58,7 +59,7 @@ class TechnologyController(
     fun updateTechnology(
         @PathVariable technologyId: Long,
         @Valid @RequestBody request: UpdateTechnologyRequest
-    ): ApiResponse<TechnologyResponse> {
+    ): ApiResponse<TechnologyDetailResponse> {
         val response = technologyService.updateTechnology(technologyId, request)
         return ApiResponse.success(response, "기술 정보가 수정되었습니다")
     }
