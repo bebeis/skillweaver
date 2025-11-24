@@ -35,11 +35,15 @@ import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
 import com.embabel.agent.core.CoreToolGroups
 import com.embabel.common.ai.model.LlmOptions
+import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.Locale
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
 
@@ -52,6 +56,9 @@ class NewTechLearningAgent(
 ) {
     
     private val logger = LoggerFactory.getLogger(NewTechLearningAgent::class.java)
+    private val resourceExecutor: ExecutorService = Executors.newFixedThreadPool(
+        max(4, Runtime.getRuntime().availableProcessors().coerceAtMost(8))
+    )
     
     private val gpt41Mini = LlmOptions(
         model = "gpt-4.1-mini",
@@ -255,23 +262,30 @@ class NewTechLearningAgent(
         logger.info("Composing hybrid plan for member: {} / technology: {}", profile.memberId, techDisplayName)
 
         val weeklyHours = (profile.weeklyCapacityMinutes / 60).coerceAtLeast(3)
-        val steps = buildHybridSteps(
+        val stepsWithoutResources = buildHybridSteps(
             techName = techDisplayName,
             pathMix = pathMix,
             weeklyHours = weeklyHours,
             prefersKorean = profile.learningPreference.preferKorean,
             learningStyle = profile.learningPreference.learningStyle
-        ).map { step ->
-            step.copy(
-                resources = generateResourcesForStep(
+        )
+        val steps = runParallelOrdered(
+            items = stepsWithoutResources,
+            block = { step ->
+                val resources = generateResourcesForStep(
                     step = step,
                     techName = techDisplayName,
                     prefersKorean = profile.learningPreference.preferKorean,
                     learningStyle = profile.learningPreference.learningStyle,
                     context = context
                 )
-            )
-        }
+                step.copy(resources = resources)
+            },
+            onError = { step, ex ->
+                logger.warn("Resource generation failed for step {}: {}", step.title, ex.message)
+                step.copy(resources = emptyList())
+            }
+        )
 
         val totalHours = steps.sumOf { it.estimatedHours }
         val startDate = LocalDate.now()
@@ -847,39 +861,54 @@ class NewTechLearningAgent(
     ): EnrichedCurriculum {
         logger.info("Enriching curriculum with resources")
         
-        val steps = curriculum.steps.map { step ->
-            val resources = context.ai()
-                .withLlm(gpt41Mini)
-                .create<List<LearningResource>>(
-                    prompt = """
-                    Find 3-5 quality learning resources for this step:
-                    
-                    Step: ${step.title}
-                    Topics: ${step.keyTopics.joinToString(", ")}
-                    Technology: ${techContext.displayName}
-                    Language Preference: ${if (profile.learningPreference.preferKorean) "Korean preferred" else "English"}
-                    
-                    Search for:
-                    - Official documentation and guides
-                    - Code examples and repositories
-                    - Tutorial videos and courses
-                    - Practice platforms
-                    
-                    Return List<LearningResource> with type, title, url, and helpful description.
-                    Prioritize free, high-quality resources suitable for ${profile.experienceLevel} level.
-                    """.trimIndent()
+        val steps = runParallelOrdered(
+            items = curriculum.steps,
+            block = { step ->
+                val resources = context.ai()
+                    .withLlm(gpt41Mini)
+                    .create<List<LearningResource>>(
+                        prompt = """
+                        Find 3-5 quality learning resources for this step:
+                        
+                        Step: ${step.title}
+                        Topics: ${step.keyTopics.joinToString(", ")}
+                        Technology: ${techContext.displayName}
+                        Language Preference: ${if (profile.learningPreference.preferKorean) "Korean preferred" else "English"}
+                        
+                        Search for:
+                        - Official documentation and guides
+                        - Code examples and repositories
+                        - Tutorial videos and courses
+                        - Practice platforms
+                        
+                        Return List<LearningResource> with type, title, url, and helpful description.
+                        Prioritize free, high-quality resources suitable for ${profile.experienceLevel} level.
+                        """.trimIndent()
+                    )
+                
+                EnrichedStep(
+                    order = step.order,
+                    title = step.title,
+                    description = step.description,
+                    estimatedHours = step.estimatedHours,
+                    prerequisites = step.prerequisites,
+                    keyTopics = step.keyTopics,
+                    learningResources = resources
                 )
-            
-            EnrichedStep(
-                order = step.order,
-                title = step.title,
-                description = step.description,
-                estimatedHours = step.estimatedHours,
-                prerequisites = step.prerequisites,
-                keyTopics = step.keyTopics,
-                learningResources = resources
-            )
-        }
+            },
+            onError = { step, ex ->
+                logger.warn("Resource enrichment failed for step {}: {}", step.title, ex.message)
+                EnrichedStep(
+                    order = step.order,
+                    title = step.title,
+                    description = step.description,
+                    estimatedHours = step.estimatedHours,
+                    prerequisites = step.prerequisites,
+                    keyTopics = step.keyTopics,
+                    learningResources = emptyList()
+                )
+            }
+        )
         
         return EnrichedCurriculum(steps)
     }
@@ -1164,6 +1193,25 @@ class NewTechLearningAgent(
         }
     }
 
+    private fun <T, R> runParallelOrdered(
+        items: List<T>,
+        block: (T) -> R,
+        onError: (T, Throwable) -> R
+    ): List<R> {
+        if (items.isEmpty()) return emptyList()
+
+        val futures = items.mapIndexed { index, item ->
+            CompletableFuture
+                .supplyAsync({ index to block(item) }, resourceExecutor)
+                .exceptionally { ex -> index to onError(item, ex) }
+        }
+
+        return futures
+            .map { it.join() }
+            .sortedBy { it.first }
+            .map { it.second }
+    }
+
     private fun buildQuickBackgroundAnalysis(
         profile: MemberProfile,
         techContext: SimpleTechContext,
@@ -1349,4 +1397,9 @@ class NewTechLearningAgent(
         val officialSite: String?,
         val isFallback: Boolean
     )
+
+    @PreDestroy
+    fun shutdownResourceExecutor() {
+        resourceExecutor.shutdown()
+    }
 }
