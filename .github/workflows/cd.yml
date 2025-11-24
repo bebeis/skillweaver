@@ -24,7 +24,7 @@ env:
   GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
-  STACK_EXCHANGE_KEY: ${{ secrets.STACK_EXCHANGE_KEY }}
+  TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
 
 jobs:
   deploy:
@@ -79,7 +79,8 @@ jobs:
             echo "SERVER_PORT=${SERVER_PORT}"
             echo "OPENAI_API_KEY=${OPENAI_API_KEY}"
             echo "BRAVE_API_KEY=${BRAVE_API_KEY}"
-            echo "STACK_EXCHANGE_KEY=${STACK_EXCHANGE_KEY}"
+            echo "TAVILY_API_KEY=${TAVILY_API_KEY}"
+            echo "GITHUB_TOKEN=${GHCR_TOKEN}"
           } > deploy/.env
 
       - name: Configure SSH
