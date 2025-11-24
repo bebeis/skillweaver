@@ -1,5 +1,6 @@
 package com.bebeis.skillweaver.core.domain.agent
 
+import com.bebeis.skillweaver.core.domain.BaseEntity
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -7,8 +8,9 @@ import java.time.LocalDateTime
 @Table(name = "agent_run")
 class AgentRun(
     @Id
-    @Column(name = "run_id", nullable = false, length = 100)
-    val runId: String,
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "agent_run_id")
+    val agentRunId: Long? = null,
 
     @Column(name = "member_id", nullable = false)
     val memberId: Long,
@@ -19,7 +21,7 @@ class AgentRun(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    val status: AgentRunStatus = AgentRunStatus.RUNNING,
+    var status: AgentRunStatus = AgentRunStatus.PENDING,
 
     @Lob
     @Column(columnDefinition = "TEXT")
@@ -27,47 +29,58 @@ class AgentRun(
 
     @Lob
     @Column(columnDefinition = "TEXT")
-    val result: String? = null,
+    var result: String? = null,
+
+    @Column(name = "learning_plan_id")
+    var learningPlanId: Long? = null,
 
     @Lob
     @Column(name = "error_message", columnDefinition = "TEXT")
-    val errorMessage: String? = null,
+    var errorMessage: String? = null,
 
-    @Column(name = "started_at", nullable = false, updatable = false)
-    val startedAt: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "started_at")
+    var startedAt: LocalDateTime? = null,
 
     @Column(name = "completed_at")
-    val completedAt: LocalDateTime? = null
-) {
-    init {
-        require(runId.isNotBlank()) { "runId는 비어있을 수 없습니다." }
+    var completedAt: LocalDateTime? = null,
+
+    @Column(name = "execution_time_ms")
+    var executionTimeMs: Long? = null,
+
+    @Column(name = "estimated_cost")
+    var estimatedCost: Double? = null
+) : BaseEntity() {
+
+    fun start() {
+        require(status == AgentRunStatus.PENDING) { "PENDING 상태에서만 시작할 수 있습니다." }
+        status = AgentRunStatus.RUNNING
+        startedAt = LocalDateTime.now()
     }
 
-    fun complete(result: String): AgentRun {
-        return AgentRun(
-            runId = this.runId,
-            memberId = this.memberId,
-            agentType = this.agentType,
-            status = AgentRunStatus.COMPLETED,
-            parameters = this.parameters,
-            result = result,
-            errorMessage = null,
-            startedAt = this.startedAt,
-            completedAt = LocalDateTime.now()
-        )
+    fun complete(result: String?, planId: Long?, cost: Double?, timeMs: Long?) {
+        require(status == AgentRunStatus.RUNNING) { "RUNNING 상태에서만 완료할 수 있습니다." }
+        status = AgentRunStatus.COMPLETED
+        this.result = result
+        this.learningPlanId = planId
+        this.estimatedCost = cost
+        this.executionTimeMs = timeMs
+        completedAt = LocalDateTime.now()
     }
 
-    fun fail(errorMessage: String): AgentRun {
-        return AgentRun(
-            runId = this.runId,
-            memberId = this.memberId,
-            agentType = this.agentType,
-            status = AgentRunStatus.FAILED,
-            parameters = this.parameters,
-            result = null,
-            errorMessage = errorMessage,
-            startedAt = this.startedAt,
-            completedAt = LocalDateTime.now()
-        )
+    fun fail(error: String) {
+        require(status == AgentRunStatus.RUNNING || status == AgentRunStatus.PENDING) {
+            "RUNNING 또는 PENDING 상태에서만 실패 처리할 수 있습니다."
+        }
+        status = AgentRunStatus.FAILED
+        errorMessage = error
+        completedAt = LocalDateTime.now()
+        executionTimeMs = startedAt?.let {
+            java.time.Duration.between(it, LocalDateTime.now()).toMillis()
+        }
     }
+
+    fun isCompleted(): Boolean = status == AgentRunStatus.COMPLETED
+    fun isFailed(): Boolean = status == AgentRunStatus.FAILED
+    fun isRunning(): Boolean = status == AgentRunStatus.RUNNING
+    fun isPending(): Boolean = status == AgentRunStatus.PENDING
 }
