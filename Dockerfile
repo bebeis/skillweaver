@@ -17,9 +17,12 @@ RUN ./gradlew clean bootJar --no-daemon && \
 FROM eclipse-temurin:21-jre-jammy
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* && \
+    curl -fsSL https://deb.nodesource.com/setup_24.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --from=builder /app/app.jar /app/app.jar
