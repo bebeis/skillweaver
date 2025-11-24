@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
+jwt:
+  secret: test-jwt-secret-key-for-testing-only
+  access-token-validity: 3600000
+  refresh-token-validity: 604800000
+  refresh-cookie-name: SW_REFRESH_TEST
+
+logging:
+  level:
+    root: WARN
+    com.bebeis.skillweaver: INFO
+
+# Embabel Agent 테스트 설정
+embabel:
+  agent:
+    providers:
+      openai:
+        api-key: test-key
