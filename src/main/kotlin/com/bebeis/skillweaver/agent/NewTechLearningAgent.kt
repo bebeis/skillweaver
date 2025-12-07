@@ -62,8 +62,109 @@ class NewTechLearningAgent(
     
     private val gpt41Mini = LlmOptions(
         model = "gpt-4.1-mini",
-        temperature = 0.7
+        temperature = 0.4
     )
+    
+
+    /**
+     * Persona 시스템 - 에이전트의 전문성과 행동 가이드라인 정의
+     */
+    private val learningArchitectPersona = """
+        You are a Senior Tech Learning Architect with 15+ years of experience in software development and education.
+        
+        Your Expertise:
+        - Designing personalized learning paths for developers at all levels
+        - Analyzing skill gaps and creating actionable, realistic study plans
+        - Curating high-quality learning resources from official docs, GitHub, and courses
+        - Understanding Korean developer community trends and preferences
+        
+        Your Approach:
+        - Always verify information accuracy before including it in recommendations
+        - Provide specific, actionable recommendations with clear time estimates
+        - Consider learner's time constraints, learning style, and prior experience
+        - Prioritize practical, hands-on learning with real-world project examples
+        - When recommending resources, prefer official documentation and reputable sources
+        - Respect Korean language preferences when specified
+        
+        Your Communication Style:
+        - Be encouraging but realistic about time commitments
+        - Explain the "why" behind each learning step
+        - Highlight common pitfalls and how to avoid them
+    """.trimIndent()
+    
+    /**
+     * Chain-of-Thought 가이드라인 - LLM이 단계별로 사고하도록 유도
+     */
+    private val chainOfThoughtGuideline = """
+        Think step by step and show your reasoning:
+        1. First, analyze the given context and requirements
+        2. Identify key factors that influence your decision
+        3. Consider alternatives and trade-offs
+        4. Make your recommendation with clear justification
+        5. Verify your answer for consistency and completeness
+    """.trimIndent()
+    
+    /**
+     * Few-shot Examples - 커리큘럼 생성 품질 향상을 위한 예시
+     */
+    private val curriculumFewShotExamples = """
+        <example technology="Spring Boot" level="INTERMEDIATE" skills="3 years Java">
+        Curriculum (5 steps, 32 hours total):
+        1. "Spring Boot 프로젝트 구조 이해" (4h)
+           - Topics: 자동 설정, 의존성 관리, 프로젝트 레이아웃
+           - Why: Spring Boot의 "마법"을 이해해야 디버깅과 커스터마이징이 가능
+        2. "REST API 개발 심화" (8h)
+           - Topics: Controller, Service, DTO 패턴, 예외 처리, 검증
+           - Why: 실무에서 가장 많이 작성하는 코드, 패턴 숙달 필수
+        3. "데이터 접근 계층 구현" (8h)
+           - Topics: JPA, Repository 패턴, 쿼리 최적화
+           - Why: 성능 문제의 80%가 DB 접근에서 발생
+        4. "테스트 주도 개발" (6h)
+           - Topics: 단위 테스트, 통합 테스트, MockK/Mockito
+           - Why: 리팩토링과 유지보수를 위한 안전망
+        5. "미니 프로젝트: 쇼핑몰 API" (6h)
+           - Topics: 전체 흐름 통합, 코드 리뷰 체크리스트
+           - Why: 실전 경험으로 자신감 확보
+        </example>
+        
+        <example technology="Kotlin" level="BEGINNER" skills="2 years Python">
+        Curriculum (7 steps, 45 hours total):
+        1. "Kotlin 기초 문법" (6h)
+           - Topics: 변수, 타입 시스템, null safety, 함수
+           - Why: Python과 다른 정적 타입 언어의 기초 이해
+        2. "함수형 프로그래밍 기초" (8h)
+           - Topics: 람다, 고차 함수, 컬렉션 연산
+           - Why: Kotlin의 강점이자 코드 품질 향상의 핵심
+        3. "객체지향 in Kotlin" (7h)
+           - Topics: 클래스, data class, sealed class, object
+           - Why: Python보다 엄격한 OOP 개념 적응
+        4. "코루틴 기초" (8h)
+           - Topics: suspend, async/await, Flow 기초
+           - Why: 현대 Kotlin 애플리케이션의 필수 요소
+        5. "Kotlin + Spring Boot" (6h)
+           - Topics: 프로젝트 설정, Kotlin 관용구 적용
+           - Why: 실무에서 가장 많이 사용하는 조합
+        6. "테스트와 MockK" (5h)
+           - Topics: JUnit5, MockK, 테스트 작성 패턴
+           - Why: Kotlin 친화적 테스트 도구 숙달
+        7. "미니 프로젝트: Todo API" (5h)
+           - Topics: CRUD 구현, 코루틴 적용
+           - Why: 학습 내용 통합 및 포트폴리오 확보
+        </example>
+    """.trimIndent()
+    
+    /**
+     * Gap 분석용 CoT 가이드라인
+     */
+    private val gapAnalysisCoT = """
+        Analyze skill gaps step by step:
+        1. List all prerequisites required for the target technology
+        2. Compare each prerequisite with member's current skills
+        3. For each gap, assess severity: HIGH (blocking), MEDIUM (slowing), LOW (minor)
+        4. Identify existing skills that transfer positively
+        5. Recommend specific preparation steps for HIGH/MEDIUM gaps
+        6. Estimate realistic preparation time based on member's experience level
+    """.trimIndent()
     
     @Action
     fun extractMemberProfile(
@@ -150,7 +251,14 @@ class NewTechLearningAgent(
             .withTools(CoreToolGroups.WEB)
             .create(
                 prompt = """
-                Generate a QUICK learning curriculum for ${techContext.displayName}.
+                $learningArchitectPersona
+                
+                $chainOfThoughtGuideline
+                
+                Study these curriculum examples for quality reference:
+                $curriculumFewShotExamples
+                
+                Now generate a QUICK learning curriculum for ${techContext.displayName}.
                 
                 Use web search to find:
                 - Latest best practices and learning resources
@@ -172,17 +280,18 @@ class NewTechLearningAgent(
                 - Each step should be practical and actionable
                 - Focus on core concepts only (skip advanced topics)
                 - Estimate hours realistically (considering member's experience)
-                - Keep prerequisites and keyTopics minimal
+                - Keep prerequisites and keyTopics minimal but specific
+                - For each step, explain WHY it's essential
                 
                 Return a list of StepBlueprint objects with:
                 - order: 1, 2, 3, (4)
-                - title: Brief step title
-                - description: What to learn in this step (2-3 sentences)
-                - estimatedHours: Hours needed (total should fit weekly capacity)
+                - title: Brief step title (Korean if preferKorean)
+                - description: What to learn and WHY (2-3 sentences)
+                - estimatedHours: Realistic hours (total should fit weekly capacity)
                 - prerequisites: List of prerequisite concepts (can be empty for first step)
-                - keyTopics: 2-3 key topics to cover
+                - keyTopics: 2-3 specific, actionable topics
                 
-                Make it QUICK and PRACTICAL for an experienced developer!
+                Make it QUICK and PRACTICAL, inspired by the examples!
                 """.trimIndent()
             )
     }
@@ -590,7 +699,11 @@ class NewTechLearningAgent(
             .withLlm(gpt41Mini)
             .create(
                 prompt = """
-                Analyze skill gaps for learning ${techContext.displayName}.
+                $learningArchitectPersona
+                
+                $gapAnalysisCoT
+                
+                Now analyze skill gaps for learning ${techContext.displayName}.
                 
                 Member Profile:
                 - Experience Level: ${profile.experienceLevel.name}
@@ -601,13 +714,13 @@ class NewTechLearningAgent(
                 - Prerequisites: ${techContext.prerequisites.joinToString(", ")}
                 - Related Technologies: ${techContext.relatedTechnologies.joinToString(", ")}
                 
-                Return a QuickGapAnalysis with:
-                - hasSignificantGaps: true if member lacks critical prerequisites
-                - identifiedGaps: List of missing knowledge areas (max 5)
+                Based on your step-by-step analysis, return a QuickGapAnalysis with:
+                - hasSignificantGaps: true if member lacks critical (HIGH severity) prerequisites
+                - identifiedGaps: List of missing knowledge areas with severity (max 5)
                 - strengthAreas: List of existing skills that will help (max 3)
-                - recommendedPreparation: Brief advice if gaps exist, null otherwise
+                - recommendedPreparation: Specific, actionable advice if gaps exist, null otherwise
                 
-                Be honest but encouraging for an INTERMEDIATE developer.
+                Be honest but encouraging. Focus on practical, achievable preparation steps.
                 """.trimIndent()
             )
     }
@@ -628,7 +741,14 @@ class NewTechLearningAgent(
             .withTools(CoreToolGroups.WEB)
             .create(
                 prompt = """
-                Generate a STANDARD learning curriculum for ${techContext.displayName}.
+                $learningArchitectPersona
+                
+                $chainOfThoughtGuideline
+                
+                Study these high-quality curriculum examples for reference:
+                $curriculumFewShotExamples
+                
+                Now generate a STANDARD learning curriculum for ${techContext.displayName}.
                 
                 Technology Info:
                 - Category: ${techContext.category}
@@ -648,23 +768,25 @@ class NewTechLearningAgent(
                 - Identified Gaps: ${gapAnalysis.identifiedGaps.joinToString(", ")}
                 - Strengths: ${gapAnalysis.strengthAreas.joinToString(", ")}
                 
-                Create a StandardCurriculum with EXACTLY 5-7 steps:
+                Create a StandardCurriculum following this structure:
+                - EXACTLY 5-7 steps, similar to the examples above
                 - Include foundation building if gaps exist
                 - Cover core concepts thoroughly
                 - Add intermediate topics
-                - Include practical application
+                - Include practical application (mini-project)
                 - Estimate hours realistically
-                - Balance theory and practice
+                - Balance theory (40%) and practice (60%)
+                - For each step, explain WHY it's important
                 
                 Return a list of StepBlueprint objects with:
                 - order: 1, 2, 3, ..., 7
-                - title: Clear step title
-                - description: What to learn (3-4 sentences)
-                - estimatedHours: Hours needed
+                - title: Clear step title (Korean if preferKorean is true)
+                - description: What to learn and WHY (3-4 sentences)
+                - estimatedHours: Realistic hours needed
                 - prerequisites: List of prerequisite concepts
-                - keyTopics: 3-5 key topics to cover
+                - keyTopics: 3-5 specific, actionable topics
                 
-                Make it COMPREHENSIVE and BALANCED for an INTERMEDIATE developer!
+                Make it COMPREHENSIVE and BALANCED, inspired by the examples!
                 """.trimIndent()
             )
     }
@@ -803,7 +925,14 @@ class NewTechLearningAgent(
             .withTools(CoreToolGroups.WEB)
             .create(
                 prompt = """
-                Generate a DETAILED learning curriculum for ${techContext.displayName}.
+                $learningArchitectPersona
+                
+                $chainOfThoughtGuideline
+                
+                Study these curriculum examples for quality and structure reference:
+                $curriculumFewShotExamples
+                
+                Now generate a DETAILED learning curriculum for ${techContext.displayName}.
                 
                 Technology Info:
                 - Category: ${techContext.category}
@@ -813,7 +942,7 @@ class NewTechLearningAgent(
                 - Common Use Cases: ${techContext.commonUseCases.joinToString(", ")}
                 
                 Member Context:
-                - Experience Level: ${profile.experienceLevel.name} (BEGINNER)
+                - Experience Level: ${profile.experienceLevel.name} (BEGINNER - needs extra support)
                 - Weekly Capacity: $weeklyHours hours
                 - Learning Style: ${profile.learningPreference.learningStyle.name}
                 - Prefers Korean: ${profile.learningPreference.preferKorean}
@@ -829,17 +958,18 @@ class NewTechLearningAgent(
                 - Progress gradually through fundamentals
                 - Cover intermediate concepts thoroughly
                 - Include multiple practice opportunities
-                - Add real-world project work
-                - Provide clear milestones
-                - Estimate hours generously
+                - Add real-world mini-project work
+                - Provide clear milestones and checkpoints
+                - Estimate hours generously (beginners need more time)
+                - For each step, explain WHY it matters
                 
                 Return a list of StepBlueprint objects with:
                 - order: 1, 2, 3, ..., 12
-                - title: Very clear, beginner-friendly title
-                - description: Detailed what/why/how (4-5 sentences)
-                - estimatedHours: Generous time estimate
+                - title: Very clear, beginner-friendly title (Korean if preferKorean)
+                - description: Detailed what/why/how (4-5 sentences, encouraging tone)
+                - estimatedHours: Generous, realistic time estimate
                 - prerequisites: Clear prerequisite list
-                - keyTopics: 4-6 specific topics to master
+                - keyTopics: 4-6 specific, beginner-friendly topics
                 
                 Make it COMPREHENSIVE, GENTLE, and SUPPORTIVE for a BEGINNER!
                 """.trimIndent()

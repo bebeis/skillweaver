@@ -1,0 +1,30 @@
+# RAG 프로필 설정 - Qdrant Vector DB 및 Spring AI 임베딩 설정
+# 사용법: --spring.profiles.active=local,rag
+
+# Qdrant Vector DB 설정
+qdrant:
+  host: ${QDRANT_HOST:localhost}
+  port: ${QDRANT_PORT:6334}
+  collection-name: ${QDRANT_COLLECTION:skillweaver-knowledge}
+  use-tls: ${QDRANT_USE_TLS:false}
+
+spring:
+  config:
+    activate:
+      on-profile: rag
+  
+  ai:
+    # OpenAI Embedding 모델 설정 (RAG용)
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      embedding:
+        options:
+          model: text-embedding-3-small
+    
+    # Qdrant Vector Store 자동 설정
+    vectorstore:
+      qdrant:
+        host: ${QDRANT_HOST:localhost}
+        port: ${QDRANT_PORT:6334}
+        collection-name: ${QDRANT_COLLECTION:skillweaver-knowledge}
+        initialize-schema: true

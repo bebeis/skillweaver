@@ -304,6 +304,7 @@ gradle-app.setting
 .github/copilot-instructions.md
 Agents.md
 Claude.md
+.agent/
 reference-docs/
 
 # docs

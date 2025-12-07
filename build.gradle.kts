@@ -36,13 +36,21 @@ repositories {
         url = uri("https://repo.embabel.com/artifactory/libs-snapshot")
         mavenContent { snapshotsOnly() }
     }
+    maven {
+        name = "spring-milestones"
+        url = uri("https://repo.spring.io/milestone")
+    }
 }
 
 val embabelAgentVersion = "0.3.0"
+val springAiVersion = "1.0.3" 
 
 dependencies {
     implementation("com.embabel.agent:embabel-agent-starter:${embabelAgentVersion}")
     implementation("com.embabel.agent:embabel-agent-starter-openai:${embabelAgentVersion}")
+    
+    implementation(platform("org.springframework.ai:spring-ai-bom:${springAiVersion}"))
+    implementation("org.springframework.ai:spring-ai-starter-vector-store-qdrant")
 
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
