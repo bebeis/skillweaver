@@ -41,7 +41,14 @@ data class TechnologyDetailResponse(
     val active: Boolean,
     val knowledge: TechnologyKnowledgeResponse?,
     val prerequisites: List<TechPrerequisiteResponse>,
-    val useCases: List<String>
+    val useCases: List<String>,
+    
+    // Phase 3: 학습 메타데이터
+    val learningRoadmap: String?,
+    val estimatedLearningHours: Int?,
+    val relatedTechnologies: List<String>,
+    val communityPopularity: Int?,
+    val jobMarketDemand: Int?
 )
 
 data class TechnologyKnowledgeResponse(
@@ -75,14 +82,30 @@ data class CreateTechnologyRequest(
     val displayName: String,
     val category: TechnologyCategory,
     val ecosystem: String? = null,
-    val officialSite: String? = null
+    val officialSite: String? = null,
+    
+    // Phase 3: 학습 메타데이터
+    val learningRoadmap: String? = null,
+    val estimatedLearningHours: Int? = null,
+    val prerequisites: List<String> = emptyList(),
+    val relatedTechnologies: List<String> = emptyList(),
+    val communityPopularity: Int? = null,
+    val jobMarketDemand: Int? = null
 )
 
 data class UpdateTechnologyRequest(
     val displayName: String? = null,
     val ecosystem: String? = null,
     val officialSite: String? = null,
-    val active: Boolean? = null
+    val active: Boolean? = null,
+    
+    // Phase 3: 학습 메타데이터
+    val learningRoadmap: String? = null,
+    val estimatedLearningHours: Int? = null,
+    val prerequisites: List<String>? = null,
+    val relatedTechnologies: List<String>? = null,
+    val communityPopularity: Int? = null,
+    val jobMarketDemand: Int? = null
 )
 
 data class UpsertTechnologyKnowledgeRequest(

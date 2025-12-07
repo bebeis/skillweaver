@@ -402,6 +402,13 @@ class NewTechLearningAgent(
             logger.info("RAG context found for {}, enhancing prompt", techContext.displayName)
         }
         
+        // Phase 5: 전문 Agent 인사이트 수집
+        val specialistInsights = fetchSpecialistInsights(techContext.displayName, profile, context)
+        val specialistSection = buildSpecialistPromptSection(specialistInsights)
+        if (!specialistInsights.isEmpty()) {
+            logger.info("Specialist insights collected for {}", techContext.displayName)
+        }
+        
         return context.ai()
             .withLlm(gpt41Mini)
             .withTools(CoreToolGroups.WEB)
@@ -414,6 +421,7 @@ class NewTechLearningAgent(
                 Study these curriculum examples for quality reference:
                 $curriculumFewShotExamples
                 $ragSection
+                $specialistSection
                 
                 Now generate a QUICK learning curriculum for ${techContext.displayName}.
                 
@@ -899,6 +907,13 @@ class NewTechLearningAgent(
         if (ragContext.isNotBlank()) {
             logger.info("RAG context found for {}, enhancing standard curriculum prompt", techContext.displayName)
         }
+
+        // 전문 Agent 인사이트 수집
+        val specialistInsights = fetchSpecialistInsights(techContext.displayName, profile, context)
+        val specialistSection = buildSpecialistPromptSection(specialistInsights)
+        if (!specialistInsights.isEmpty()) {
+            logger.info("Specialist insights collected for {}", techContext.displayName)
+        }
         
         return context.ai()
             .withLlm(gpt41Mini)
@@ -912,6 +927,7 @@ class NewTechLearningAgent(
                 Study these high-quality curriculum examples for reference:
                 $curriculumFewShotExamples
                 $ragSection
+                $specialistSection
                 
                 Now generate a STANDARD learning curriculum for ${techContext.displayName}.
                 
@@ -1091,6 +1107,13 @@ class NewTechLearningAgent(
         if (ragContext.isNotBlank()) {
             logger.info("RAG context found for {}, enhancing detailed curriculum prompt", techContext.displayName)
         }
+
+        // 전문 Agent 인사이트 수집
+        val specialistInsights = fetchSpecialistInsights(techContext.displayName, profile, context)
+        val specialistSection = buildSpecialistPromptSection(specialistInsights)
+        if (!specialistInsights.isEmpty()) {
+            logger.info("Specialist insights collected for {}", techContext.displayName)
+        }
         
         return context.ai()
             .withLlm(gpt41Mini)
@@ -1104,6 +1127,7 @@ class NewTechLearningAgent(
                 Study these curriculum examples for quality and structure reference:
                 $curriculumFewShotExamples
                 $ragSection
+                $specialistSection
                 
                 Now generate a DETAILED learning curriculum for ${techContext.displayName}.
                 

@@ -36,7 +36,13 @@ class TechnologyService(
             displayName = request.displayName,
             category = request.category,
             ecosystem = request.ecosystem,
-            officialSite = request.officialSite
+            officialSite = request.officialSite,
+            learningRoadmap = request.learningRoadmap,
+            estimatedLearningHours = request.estimatedLearningHours,
+            prerequisites = request.prerequisites,
+            relatedTechnologies = request.relatedTechnologies,
+            communityPopularity = request.communityPopularity,
+            jobMarketDemand = request.jobMarketDemand
         )
 
         val savedTechnology = technologyRepository.save(technology)
@@ -90,7 +96,13 @@ class TechnologyService(
             category = technology.category,
             ecosystem = request.ecosystem ?: technology.ecosystem,
             officialSite = request.officialSite ?: technology.officialSite,
-            active = request.active ?: technology.active
+            active = request.active ?: technology.active,
+            learningRoadmap = request.learningRoadmap ?: technology.learningRoadmap,
+            estimatedLearningHours = request.estimatedLearningHours ?: technology.estimatedLearningHours,
+            prerequisites = request.prerequisites ?: technology.prerequisites,
+            relatedTechnologies = request.relatedTechnologies ?: technology.relatedTechnologies,
+            communityPopularity = request.communityPopularity ?: technology.communityPopularity,
+            jobMarketDemand = request.jobMarketDemand ?: technology.jobMarketDemand
         )
 
         val savedTechnology = technologyRepository.save(updatedTechnology)
@@ -301,7 +313,12 @@ class TechnologyService(
             active = technology.active,
             knowledge = bundle.knowledge,
             prerequisites = bundle.prerequisites,
-            useCases = bundle.useCases
+            useCases = bundle.useCases,
+            learningRoadmap = technology.learningRoadmap,
+            estimatedLearningHours = technology.estimatedLearningHours,
+            relatedTechnologies = technology.relatedTechnologies,
+            communityPopularity = technology.communityPopularity,
+            jobMarketDemand = technology.jobMarketDemand
         )
     }
 
