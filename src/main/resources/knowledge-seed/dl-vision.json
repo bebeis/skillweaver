@@ -1,6 +1,26 @@
 {
     "technology": "dl-vision",
-    "displayName": "Computer Vision (Deep Learning)",
+    "displayName": "Computer Vision (DL)",
+    "category": "CONCEPT",
+    "difficulty": "ADVANCED",
+    "relations": [
+        {
+            "to": "ml-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "pytorch",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "tensorflow",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "ai-generative-art",
+            "type": "RELATED_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

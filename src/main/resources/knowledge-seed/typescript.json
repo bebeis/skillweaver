@@ -1,6 +1,26 @@
 {
     "technology": "typescript",
     "displayName": "TypeScript",
+    "category": "LANGUAGE",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "javascript",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "javascript",
+            "type": "EXTENDS"
+        },
+        {
+            "to": "react",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "nextjs",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

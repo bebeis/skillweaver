@@ -1,6 +1,22 @@
 {
     "technology": "javascript",
-    "displayName": "JavaScript (ES6+)",
+    "displayName": "JavaScript",
+    "category": "LANGUAGE",
+    "difficulty": "BEGINNER",
+    "relations": [
+        {
+            "to": "cs-algorithm",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "typescript",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "react",
+            "type": "RECOMMENDED_AFTER"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

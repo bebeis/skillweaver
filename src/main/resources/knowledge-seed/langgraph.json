@@ -1,6 +1,22 @@
 {
     "technology": "langgraph",
-    "displayName": "LangGraph (Agentic Workflow)",
+    "displayName": "LangGraph",
+    "category": "LIBRARY",
+    "difficulty": "ADVANCED",
+    "relations": [
+        {
+            "to": "langchain",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "langchain",
+            "type": "EXTENDS"
+        },
+        {
+            "to": "python-data",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

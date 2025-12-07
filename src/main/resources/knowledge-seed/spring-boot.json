@@ -1,6 +1,30 @@
 {
     "technology": "spring-boot",
     "displayName": "Spring Boot",
+    "category": "FRAMEWORK",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "java",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "spring-framework",
+            "type": "EXTENDS"
+        },
+        {
+            "to": "kotlin",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "spring-data",
+            "type": "CONTAINS"
+        },
+        {
+            "to": "db-mysql",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

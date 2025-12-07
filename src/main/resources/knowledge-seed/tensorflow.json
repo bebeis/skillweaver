@@ -1,6 +1,30 @@
 {
     "technology": "tensorflow",
-    "displayName": "TensorFlow & Keras",
+    "displayName": "TensorFlow",
+    "category": "LIBRARY",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "python-data",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "ml-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "ai-math",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "pytorch",
+            "type": "ALTERNATIVE_TO"
+        },
+        {
+            "to": "ai-generative-art",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

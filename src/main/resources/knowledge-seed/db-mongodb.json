@@ -1,6 +1,22 @@
 {
     "technology": "db-mongodb",
-    "displayName": "MongoDB (NoSQL)",
+    "displayName": "MongoDB",
+    "category": "DATABASE",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "cs-db-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "spring-boot",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "nextjs",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

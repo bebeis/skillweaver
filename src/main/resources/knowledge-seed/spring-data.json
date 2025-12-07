@@ -1,6 +1,38 @@
 {
     "technology": "spring-data",
-    "displayName": "Spring Data & Database Access",
+    "displayName": "Spring Data",
+    "category": "LIBRARY",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "java",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "spring-framework",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "spring-boot",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "db-mysql",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "db-postgresql",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "db-mongodb",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "db-redis",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

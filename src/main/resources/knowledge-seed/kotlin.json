@@ -1,6 +1,26 @@
 {
     "technology": "kotlin",
     "displayName": "Kotlin",
+    "category": "LANGUAGE",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "java",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "java",
+            "type": "ALTERNATIVE_TO"
+        },
+        {
+            "to": "android",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "spring-boot",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

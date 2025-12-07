@@ -1,6 +1,22 @@
 {
     "technology": "spring-framework",
-    "displayName": "Spring Framework & MVC",
+    "displayName": "Spring Framework",
+    "category": "FRAMEWORK",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "java",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "kotlin",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "spring-boot",
+            "type": "EXTENDS"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

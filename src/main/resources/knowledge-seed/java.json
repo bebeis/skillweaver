@@ -1,6 +1,26 @@
 {
     "technology": "java",
     "displayName": "Java",
+    "category": "LANGUAGE",
+    "difficulty": "BEGINNER",
+    "relations": [
+        {
+            "to": "cs-algorithm",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "cs-datastructure",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "kotlin",
+            "type": "ALTERNATIVE_TO"
+        },
+        {
+            "to": "spring-boot",
+            "type": "RECOMMENDED_AFTER"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

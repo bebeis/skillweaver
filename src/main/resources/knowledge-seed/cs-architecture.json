@@ -1,6 +1,18 @@
 {
     "technology": "cs-architecture",
     "displayName": "Computer Architecture",
+    "category": "CONCEPT",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "cs-os",
+            "type": "RELATED_TO"
+        },
+        {
+            "to": "cs-network",
+            "type": "RELATED_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

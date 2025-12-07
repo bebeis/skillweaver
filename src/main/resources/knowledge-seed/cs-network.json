@@ -1,6 +1,18 @@
 {
     "technology": "cs-network",
-    "displayName": "Computer Network",
+    "displayName": "Computer Networks",
+    "category": "CONCEPT",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "cs-os",
+            "type": "RELATED_TO"
+        },
+        {
+            "to": "http",
+            "type": "CONTAINS"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

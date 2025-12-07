@@ -1,6 +1,22 @@
 {
     "technology": "tanstack-query",
     "displayName": "TanStack Query (React Query)",
+    "category": "LIBRARY",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "react",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "nextjs",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "zustand",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

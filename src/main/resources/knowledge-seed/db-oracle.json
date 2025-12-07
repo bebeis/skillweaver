@@ -1,6 +1,22 @@
 {
     "technology": "db-oracle",
     "displayName": "Oracle Database",
+    "category": "DATABASE",
+    "difficulty": "ADVANCED",
+    "relations": [
+        {
+            "to": "cs-db-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "spring-boot",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "db-mysql",
+            "type": "ALTERNATIVE_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

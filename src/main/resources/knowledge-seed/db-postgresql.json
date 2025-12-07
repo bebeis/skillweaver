@@ -1,6 +1,22 @@
 {
     "technology": "db-postgresql",
     "displayName": "PostgreSQL",
+    "category": "DATABASE",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "cs-db-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "spring-boot",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "db-mysql",
+            "type": "ALTERNATIVE_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

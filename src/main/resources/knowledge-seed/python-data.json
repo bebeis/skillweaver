@@ -1,6 +1,30 @@
 {
     "technology": "python-data",
     "displayName": "Python for Data Science",
+    "category": "LANGUAGE",
+    "difficulty": "BEGINNER",
+    "relations": [
+        {
+            "to": "cs-algorithm",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "pytorch",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "tensorflow",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "scikit-learn",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "ai-math",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

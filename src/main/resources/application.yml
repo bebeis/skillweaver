@@ -74,6 +74,29 @@ embabel:
       scanning:
         annotation: true
 
+# SkillWeaver V3 설정
+skillweaver:
+  raft:
+    enabled: ${RAFT_ENABLED:false}
+    # Fine-tuned 모델 ID (OpenAI Fine-tuning 완료 후 설정)
+    # 예: ft:gpt-4o-mini-2024-07-18:my-org:skillweaver:abc123
+    model-id: ${RAFT_MODEL_ID:}
+  graph:
+    enabled: ${GRAPH_RAG_ENABLED:false}
+    seed-on-startup: ${GRAPH_SEED_ON_STARTUP:false}
+    neo4j:
+      uri: ${NEO4J_URI:bolt://localhost:7687}
+      username: ${NEO4J_USERNAME:neo4j}
+      password: ${NEO4J_PASSWORD:password}
+
+# Qdrant Vector Store 설정
+qdrant:
+  host: ${QDRANT_CLOUD_ENDPOINT:localhost}
+  port: ${QDRANT_PORT:6334}
+  use-tls: ${QDRANT_USE_TLS:false}
+  api-key: ${QDRANT_CLOUD_API_KEY:}
+  collection-name: ${QDRANT_COLLECTION:skillweaver-knowledge}
+
 ---
 spring:
   config:

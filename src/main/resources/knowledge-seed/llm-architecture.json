@@ -1,6 +1,22 @@
 {
     "technology": "llm-architecture",
-    "displayName": "LLM Architecture Deep Dive",
+    "displayName": "LLM Architecture",
+    "category": "CONCEPT",
+    "difficulty": "ADVANCED",
+    "relations": [
+        {
+            "to": "dl-nlp",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "pytorch",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "llm-training",
+            "type": "RECOMMENDED_AFTER"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

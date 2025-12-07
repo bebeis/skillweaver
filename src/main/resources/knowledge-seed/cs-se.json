@@ -1,6 +1,18 @@
 {
     "technology": "cs-se",
     "displayName": "Software Engineering",
+    "category": "CONCEPT",
+    "difficulty": "ADVANCED",
+    "relations": [
+        {
+            "to": "cs-algorithm",
+            "type": "RELATED_TO"
+        },
+        {
+            "to": "mlops",
+            "type": "RELATED_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

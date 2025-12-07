@@ -1,6 +1,38 @@
 {
     "technology": "pytorch",
     "displayName": "PyTorch",
+    "category": "LIBRARY",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "python-data",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "ml-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "ai-math",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "tensorflow",
+            "type": "ALTERNATIVE_TO"
+        },
+        {
+            "to": "dl-nlp",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "dl-vision",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "ai-rl",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

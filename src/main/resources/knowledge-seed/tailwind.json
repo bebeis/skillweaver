@@ -1,6 +1,22 @@
 {
     "technology": "tailwind",
     "displayName": "Tailwind CSS",
+    "category": "LIBRARY",
+    "difficulty": "BEGINNER",
+    "relations": [
+        {
+            "to": "react",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "nextjs",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "styled-components",
+            "type": "ALTERNATIVE_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

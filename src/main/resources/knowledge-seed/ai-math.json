@@ -1,6 +1,18 @@
 {
     "technology": "ai-math",
     "displayName": "Mathematics for AI",
+    "category": "CONCEPT",
+    "difficulty": "BEGINNER",
+    "relations": [
+        {
+            "to": "ml-theory",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "python-data",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

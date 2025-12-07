@@ -1,6 +1,22 @@
 {
     "technology": "nextjs",
-    "displayName": "Next.js (App Router)",
+    "displayName": "Next.js",
+    "category": "FRAMEWORK",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "react",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "typescript",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "tailwind",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

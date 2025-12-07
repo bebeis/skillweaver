@@ -1,6 +1,22 @@
 {
     "technology": "db-redis",
-    "displayName": "Redis (In-Memory)",
+    "displayName": "Redis",
+    "category": "DATABASE",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "cs-db-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "spring-boot",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "db-mysql",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

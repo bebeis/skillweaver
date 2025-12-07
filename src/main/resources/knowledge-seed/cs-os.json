@@ -1,6 +1,18 @@
 {
     "technology": "cs-os",
-    "displayName": "Operating System",
+    "displayName": "Operating Systems",
+    "category": "CONCEPT",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "cs-architecture",
+            "type": "RELATED_TO"
+        },
+        {
+            "to": "linux",
+            "type": "CONTAINS"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

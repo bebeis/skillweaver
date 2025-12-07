@@ -1,6 +1,23 @@
+```json
 {
     "technology": "android",
-    "displayName": "Android Development (Kotlin)",
+    "displayName": "Android Development",
+    "category": "FRAMEWORK",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "kotlin",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "java",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "ios",
+            "type": "ALTERNATIVE_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

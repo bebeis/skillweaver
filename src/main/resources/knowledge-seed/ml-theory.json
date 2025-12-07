@@ -1,6 +1,30 @@
 {
     "technology": "ml-theory",
     "displayName": "Machine Learning Theory",
+    "category": "CONCEPT",
+    "difficulty": "BEGINNER",
+    "relations": [
+        {
+            "to": "ai-math",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "python-data",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "scikit-learn",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "pytorch",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "tensorflow",
+            "type": "RECOMMENDED_AFTER"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

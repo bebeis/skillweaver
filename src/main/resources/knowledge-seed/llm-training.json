@@ -1,6 +1,22 @@
 {
     "technology": "llm-training",
     "displayName": "LLM Training & Fine-tuning",
+    "category": "CONCEPT",
+    "difficulty": "EXPERT",
+    "relations": [
+        {
+            "to": "llm-architecture",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "pytorch",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "mlops",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

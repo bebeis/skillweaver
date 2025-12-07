@@ -1,6 +1,26 @@
 {
     "technology": "dl-nlp",
-    "displayName": "Natural Language Processing (NLP)",
+    "displayName": "Natural Language Processing (DL)",
+    "category": "CONCEPT",
+    "difficulty": "ADVANCED",
+    "relations": [
+        {
+            "to": "ml-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "pytorch",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "tensorflow",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "llm-architecture",
+            "type": "CONTAINS"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

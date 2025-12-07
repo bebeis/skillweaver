@@ -1,6 +1,18 @@
 {
     "technology": "styled-components",
-    "displayName": "Styled Components (CSS-in-JS)",
+    "displayName": "Styled Components",
+    "category": "LIBRARY",
+    "difficulty": "BEGINNER",
+    "relations": [
+        {
+            "to": "react",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "tailwind",
+            "type": "ALTERNATIVE_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

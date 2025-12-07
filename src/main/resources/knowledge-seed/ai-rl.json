@@ -1,6 +1,22 @@
 {
     "technology": "ai-rl",
     "displayName": "Reinforcement Learning",
+    "category": "CONCEPT",
+    "difficulty": "ADVANCED",
+    "relations": [
+        {
+            "to": "ml-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "python-data",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "pytorch",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

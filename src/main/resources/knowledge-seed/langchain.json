@@ -1,6 +1,26 @@
 {
     "technology": "langchain",
     "displayName": "LangChain Framework",
+    "category": "LIBRARY",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "python-data",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "llm-architecture",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "langgraph",
+            "type": "CONTAINS"
+        },
+        {
+            "to": "pytorch",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

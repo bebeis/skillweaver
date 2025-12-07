@@ -51,6 +51,9 @@ dependencies {
     
     implementation(platform("org.springframework.ai:spring-ai-bom:${springAiVersion}"))
     implementation("org.springframework.ai:spring-ai-starter-vector-store-qdrant")
+    
+    // V3 GraphRAG - Neo4j Driver
+    implementation("org.neo4j.driver:neo4j-java-driver:5.26.0")
 
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")

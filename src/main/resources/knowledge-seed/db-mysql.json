@@ -1,6 +1,22 @@
 {
     "technology": "db-mysql",
-    "displayName": "MySQL (RDBMS)",
+    "displayName": "MySQL",
+    "category": "DATABASE",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "cs-db-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "spring-boot",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "db-postgresql",
+            "type": "ALTERNATIVE_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

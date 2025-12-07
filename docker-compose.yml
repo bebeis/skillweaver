@@ -20,6 +20,30 @@ services:
       retries: 3
     restart: unless-stopped
 
+  # Neo4j Graph Database for GraphRAG (V3)
+  neo4j:
+    image: neo4j:5-community
+    container_name: skillweaver-neo4j
+    ports:
+      - "7474:7474"    # Browser UI
+      - "7687:7687"    # Bolt Protocol
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/skillweaver123
+      - NEO4J_PLUGINS=["apoc"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:7474"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
 volumes:
   qdrant_storage:
+    driver: local
+  neo4j_data:
+    driver: local
+  neo4j_logs:
     driver: local

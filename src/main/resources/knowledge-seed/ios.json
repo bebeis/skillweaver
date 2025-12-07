@@ -1,6 +1,14 @@
 {
     "technology": "ios",
-    "displayName": "iOS Development (Swift)",
+    "displayName": "iOS Development",
+    "category": "FRAMEWORK",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "android",
+            "type": "ALTERNATIVE_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

@@ -1,6 +1,22 @@
 {
     "technology": "cs-algorithm",
     "displayName": "Algorithms",
+    "category": "CONCEPT",
+    "difficulty": "BEGINNER",
+    "relations": [
+        {
+            "to": "cs-datastructure",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "java",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "python-data",
+            "type": "RECOMMENDED_AFTER"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

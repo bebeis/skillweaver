@@ -1,6 +1,22 @@
 {
     "technology": "scikit-learn",
-    "displayName": "Scikit-Learn (Machine Learning)",
+    "displayName": "Scikit-Learn",
+    "category": "LIBRARY",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "python-data",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "ml-theory",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "pytorch",
+            "type": "RECOMMENDED_AFTER"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

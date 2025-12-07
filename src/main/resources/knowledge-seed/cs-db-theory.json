@@ -1,6 +1,30 @@
 {
     "technology": "cs-db-theory",
     "displayName": "Database Theory",
+    "category": "CONCEPT",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "cs-datastructure",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "db-mysql",
+            "type": "CONTAINS"
+        },
+        {
+            "to": "db-postgresql",
+            "type": "CONTAINS"
+        },
+        {
+            "to": "db-mongodb",
+            "type": "CONTAINS"
+        },
+        {
+            "to": "db-redis",
+            "type": "CONTAINS"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

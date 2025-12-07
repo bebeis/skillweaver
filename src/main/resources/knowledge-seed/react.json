@@ -1,6 +1,38 @@
 {
     "technology": "react",
     "displayName": "React",
+    "category": "LIBRARY",
+    "difficulty": "INTERMEDIATE",
+    "relations": [
+        {
+            "to": "javascript",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "typescript",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "nextjs",
+            "type": "CONTAINS"
+        },
+        {
+            "to": "tailwind",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "styled-components",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "zustand",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "tanstack-query",
+            "type": "USED_WITH"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

@@ -14,7 +14,9 @@ import org.springframework.context.annotation.Profile
  * Qdrant Vector Store 설정 - RAG 시스템을 위한 벡터 DB 연결
  * 
  * Profile "rag"가 활성화된 경우에만 빈이 등록됩니다.
- * 로컬 개발 시: docker-compose up -d qdrant 실행 필요
+ * 
+ * 로컬 개발: docker-compose up -d qdrant
+ * 클라우드: QDRANT_CLOUD_ENDPOINT, QDRANT_CLOUD_API_KEY 환경변수 설정
  */
 @Configuration
 @Profile("rag")
@@ -29,11 +31,20 @@ class QdrantConfig(
     private val collectionName: String,
     
     @Value("\${qdrant.use-tls:false}")
-    private val useTls: Boolean
+    private val useTls: Boolean,
+    
+    @Value("\${qdrant.api-key:}")
+    private val apiKey: String
 ) {
     @Bean
     fun qdrantClient(): QdrantClient {
         val grpcClientBuilder = QdrantGrpcClient.newBuilder(host, port, useTls)
+        
+        // Qdrant Cloud 사용 시 API Key 설정
+        if (apiKey.isNotBlank()) {
+            grpcClientBuilder.withApiKey(apiKey)
+        }
+        
         return QdrantClient(grpcClientBuilder.build())
     }
     
@@ -42,10 +53,10 @@ class QdrantConfig(
         qdrantClient: QdrantClient,
         embeddingModel: EmbeddingModel
     ): VectorStore {
-        // Spring AI 1.0.3 - QdrantVectorStore.builder() 패턴 사용
         return QdrantVectorStore.builder(qdrantClient, embeddingModel)
             .collectionName(collectionName)
             .initializeSchema(true)
             .build()
     }
 }
+

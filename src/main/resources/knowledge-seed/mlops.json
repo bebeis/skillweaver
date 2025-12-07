@@ -1,6 +1,23 @@
+```json
 {
     "technology": "mlops",
     "displayName": "MLOps (Machine Learning Operations)",
+    "category": "CONCEPT",
+    "difficulty": "ADVANCED",
+    "relations": [
+        {
+            "to": "ml-theory",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "python-data",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "cs-se",
+            "type": "RELATED_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

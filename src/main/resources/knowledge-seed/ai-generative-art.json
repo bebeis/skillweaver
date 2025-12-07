@@ -1,6 +1,26 @@
 {
     "technology": "ai-generative-art",
-    "displayName": "Generative AI (Image/Audio)",
+    "displayName": "Generative AI",
+    "category": "CONCEPT",
+    "difficulty": "ADVANCED",
+    "relations": [
+        {
+            "to": "dl-vision",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "pytorch",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "tensorflow",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "llm-architecture",
+            "type": "RELATED_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",

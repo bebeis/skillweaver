@@ -1,6 +1,22 @@
 {
     "technology": "cs-datastructure",
     "displayName": "Data Structures",
+    "category": "CONCEPT",
+    "difficulty": "BEGINNER",
+    "relations": [
+        {
+            "to": "java",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "python-data",
+            "type": "RECOMMENDED_AFTER"
+        },
+        {
+            "to": "cs-algorithm",
+            "type": "RELATED_TO"
+        }
+    ],
     "documents": [
         {
             "type": "ROADMAP",
