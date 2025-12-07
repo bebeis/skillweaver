@@ -1,0 +1,11 @@
+{
+    "technology": "zustand",
+    "displayName": "Zustand (State Management)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Zustand Docs (Poimandres)",
+            "content": "# Zustand: 작고 빠르고 확장 가능한 상태 관리\n\n## 왜 Redux 대신 Zustand인가?\n- **Boilerplate Free**: Action, Reducer, Dispatch... 복잡한 설정 없이 Hook 하나로 끝남.\n- **Small Bundle Size**: 매우 가벼움.\n- **Flexible**: Redux DevTools랑도 붙일 수 있고, React 밖에서도 쓸 수 있음.\n\n## 핵심 사용법\n1. **Store 생성**: `create` 함수로 상태와 액션을 정의.\n   ```typescript\n   const useStore = create((set) => ({\n     bears: 0,\n     increase: () => set((state) => ({ bears: state.bears + 1 })),\n   }))\n   ```\n2. **Component에서 사용**: Selector 패턴 권장 (렌더링 최적화)\n   ```typescript\n   const bears = useStore((state) => state.bears)\n   ```\n\n## 심화\n- **Persist Middleware**: LocalStorage에 자동 저장/복구 (`persist`)\n- **Immer Middleware**: 불변성 관리를 쉽게 (`immer`)"
+        }
+    ]
+}

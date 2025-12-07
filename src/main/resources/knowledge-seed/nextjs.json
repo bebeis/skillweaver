@@ -1,0 +1,16 @@
+{
+    "technology": "nextjs",
+    "displayName": "Next.js (App Router)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Next.js Docs (Vercel)",
+            "content": "# Next.js 14+ 학습 로드맵 (App Router)\n\n## 1단계: Routing (File-system based)\n- **layout.tsx**: 공통 레이아웃 (중첩 가능)\n- **page.tsx**: 라우트별 UI\n- **loading.tsx**: Suspense 기반 로딩 UI\n- **error.tsx**: Error Boundary\n- **not-found.tsx**: 404 페이지\n- **Dynamic Routes**: `[id]`, `[...slug]`\n\n## 2단계: Rendering & Data Fetching\n- **Open Graph**: SEO를 위한 메타데이터 동적 생성 (`generateMetadata`)\n- **RSC (React Server Component)**: 기본값. 서버에서 HTML 생성, 번들 크기 감소, DB 직접 접근 가능.\n- **Client Component**: `'use client'`. `useState`, `useEffect`, 이벤트 핸들러(`onClick`) 필요 시 사용.\n- **Caching**: Request Memoization, Data Cache, Full Route Cache\n- **Server Actions**: API 라우트 없이 함수 호출로 폼 처리 및 데이터 변이.\n\n## 3단계: Optimization\n- **Image Component**: `next/image` (자동 리사이징, lazy loading)\n- **Font Optimization**: `next/font` (구글 폰트 최적화, CLS 방지)\n- **Script Optimization**: `next/script`\n\n## 4단계: 배포 (Deployment)\n- **Vercel**: Zero Config 배포\n- **Middleware**: 요청 전처리 (인증, 리다이렉트)"
+        },
+        {
+            "type": "BEST_PRACTICE",
+            "source": "Vercel Engineering Blog",
+            "content": "# Next.js 실무 팁 (App Router)\n\n## 1. 서버 컴포넌트 최대한 활용\n- 클라이언트 컴포넌트는 트리 말단으로 밀어내세요(Leaf Nodes).\n- 큰 컴포넌트 전체를 `'use client'`로 만들지 말고, 상호작용이 필요한 부분만 별도의 컴포넌트로 분리하세요.\n\n## 2. 데이터 페칭\n- `useEffect` + `fetch` 조합은 이제 그만. RSC에서 `await fetch` 하세요. (Waterfalls 제거)\n- 여러 컴포넌트에서 같은 데이터를 `fetch` 해도 상관없습니다 (Request Memoization이 중복 요청 제거).\n\n## 3. Server Actions\n- 폼 제출 처리를 위해 별도 API Route(`route.ts`)를 만들지 말고, Server Actions를 사용하세요 (Type-safe)."
+        }
+    ]
+}

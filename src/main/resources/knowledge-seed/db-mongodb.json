@@ -1,0 +1,11 @@
+{
+    "technology": "db-mongodb",
+    "displayName": "MongoDB (NoSQL)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "MongoDB University",
+            "content": "# MongoDB 학습 로드맵\n\n## 1. Document Model\n- **Schema-less**: 정해진 스키마가 없음. 유연성.\n- **BSON**: Binary JSON. 데이터 저장 포맷.\n- **Embedding vs Referencing**: 데이터를 내장할 것인가(Join 불필요, 빠름), 참조할 것인가(정규화).\n\n## 2. Replica Set & Sharding\n- **Replica Set**: 고가용성(HA). Primary - Secondary 구조.\n- **Sharding**: 수평 확장(Scale-out). 데이터를 여러 서버에 분산 저장 (Shard Key 중요).\n\n## 3. Aggregation Pipeline\n- 복잡한 데이터 가공 및 분석 쿼리 (`$match`, `$group`, `$project`)."
+        }
+    ]
+}

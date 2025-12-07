@@ -1,0 +1,11 @@
+{
+    "technology": "llm-training",
+    "displayName": "LLM Training & Fine-tuning",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Hugging Face PEFT Docs & OpenAI Methodology",
+            "content": "# LLM 학습 파이프라인\n\n## 1. Pre-training (사전 학습)\n- **Corpus**: 수 조(Trillions) 개의 토큰 (Common Crawl, GitHub, Wikipedia).\n- **Self-Supervised Learning**: Next Token Prediction (정답 레이블 없이 텍스트 자체로 학습).\n\n## 2. SFT (Supervised Fine-tuning)\n- **Instruction Tuning**: \"질문 -> 답변\" 쌍의 데이터셋으로 지시 따르기 능력 부여.\n- **Parameter Efficient Fine-Tuning (PEFT)**:\n  - **LoRA (Low-Rank Adaptation)**: 전체 가중치를 얼리고, 작은 행렬 두 개(A, B)만 학습하여 삽입. 메모리 절약 혁명.\n  - **QLoRA**: 4-bit 양자화된 LoRA.\n\n## 3. Alignment (정렬)\n- **RLHF (Reinforcement Learning from Human Feedback)**: 인간 선호도 보상 모델(Reward Model)을 만들어 PPO로 학습.\n- **DPO (Direct Preference Optimization)**: 강화학습 없이 선호도 데이터만으로 직접 최적화 (RLHF보다 간단하고 안정적)."
+        }
+    ]
+}

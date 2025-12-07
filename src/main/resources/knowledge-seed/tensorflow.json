@@ -1,0 +1,11 @@
+{
+    "technology": "tensorflow",
+    "displayName": "TensorFlow & Keras",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "TensorFlow 2.x Docs",
+            "content": "# TensorFlow 2 & Keras 로드맵\n\n## 1. Keras API (High-Level)\n- **Sequential API**: 층을 순서대로 쌓는 가장 쉬운 방법.\n- **Functional API**: 다중 입력/출력 등 복잡한 모델 구성 시 사용.\n- **Model Subclassing**: `tf.keras.Model`을 상속받아 `call()` 메서드 직접 구현 (가장 유연하지만 어려움).\n\n## 2. 주요 모듈\n- **tf.data**: 대용량 데이터를 효율적으로 파이프라인으로 로딩 (`prefetch`, `cache`).\n- **Callbakcs**: `EarlyStopping` (과적합 방지), `ModelCheckpoint` (중간 저장), `TensorBoard` (시각화).\n\n## 3. 배포 (Serving)\n- **TFLite**: 모바일/IoT 기기용 경량화 모델 (.tflite).\n- **TFJS**: 브라우저에서 실행되는 모델.\n- **TF Serving**: 프로덕션 환경 모델 서빙 시스템."
+        }
+    ]
+}

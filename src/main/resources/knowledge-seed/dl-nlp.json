@@ -1,0 +1,11 @@
+{
+    "technology": "dl-nlp",
+    "displayName": "Natural Language Processing (NLP)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "CS224n (Stanford) & Hugging Face Course",
+            "content": "# NLP 모델의 발전사\n\n## 1. Word Embedding\n- **Word2Vec (2013)**: 단어의 의미를 벡터 공간에 매핑 (King - Man + Woman = Queen).\n\n## 2. RNN Era\n- **LSTM/GRU**: Long-term Dependency 문제 완화.\n- **Seq2Seq + Attention**: 번역 성능의 비약적 발전.\n\n## 3. Transformer Era (2017+)\n- **Encoder-only (BERT)**: 양방향 문맥 이해. Classification, NER에 강점.\n- **Decoder-only (GPT)**: 다음 단어 예측 (Generation). 현재 LLM의 주류 아키텍처.\n- **Encoder-Decoder (T5, BART)**: 번역, 요약 등 변환 작업."
+        }
+    ]
+}

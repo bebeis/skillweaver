@@ -1,0 +1,11 @@
+{
+    "technology": "cs-db-theory",
+    "displayName": "Database Theory",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Database System Concepts",
+            "content": "# 데이터베이스 이론 핵심\n\n## 1. 트랜잭션 (ACID)\n- **Atomicity (원자성)**: All or Nothing.\n- **Consistency (일관성)**: 제약 조건(PK, Type) 위배 X.\n- **Isolation (격리성)**: 트랜잭션끼리 서로 영향 X (격리 수준).\n- **Durability (지속성)**: 커밋되면 영구 저장 (Wal/Redo Log).\n\n## 2. 정규화 (Normalization)\n- **목적**: 이상 현상(Anomaly: 삽입, 삭제, 갱신 이상) 제거, 중복 최소화.\n- **과정**: 1NF(원자값) -> 2NF(부분함수 종속 제거) -> 3NF(이행함수 종속 제거).\n\n## 3. 인덱스 (Index)\n- **B-Tree**: 밸런스 트리. 탐색/삽입/삭제 O(logN).\n- **Clustered Index**: 실제 데이터가 인덱스 순서로 정렬됨 (PK). 테이블당 1개.\n- **Non-Clustered Index**: 별도의 인덱스 페이지 생성. 데이터 포인터 저장."
+        }
+    ]
+}

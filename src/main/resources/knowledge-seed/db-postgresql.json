@@ -1,0 +1,11 @@
+{
+    "technology": "db-postgresql",
+    "displayName": "PostgreSQL",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "PostgreSQL Docs",
+            "content": "# PostgreSQL 특징 (The World's Most Advanced Open Source Relational Database)\n\n## 1. 강력한 기능\n- **MVCC**: Oracle과 유사한 방식의 MVCC 구현.\n- **JSON 지원**: JSONB 타입을 통해 NoSQL처럼 사용 가능 (인덱싱 가능).\n- **PostGIS**: 지리 정보 시스템(GIS) 분야의 사실상 표준.\n\n## 2. MySQL과 차이점\n- **Join 성능**: 복잡한 쿼리와 조인 성능이 MySQL보다 우수하다고 평가받음.\n- **Vacuum**: 삭제/업데이트된 행(Dead Tuple)을 정리하는 작업이 필요함."
+        }
+    ]
+}

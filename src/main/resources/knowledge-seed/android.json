@@ -1,0 +1,21 @@
+{
+    "technology": "android",
+    "displayName": "Android Development (Kotlin)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Android Developers (Google) + Modern Android Development (MAD)",
+            "content": "# Android 학습 로드맵 (Modern Android)\n\n## 1단계: Kotlin (The First Step)\n- **Android is Kotlin-first**: Java보다 Kotlin을 먼저, 깊게 배우세요.\n- **Coroutines & Flow**: 비동기 스트림 처리 (RxJava 대체)\n\n## 2단계: Jetpack Compose (UI)\n- **Declarative UI**: XML의 시대는 갔습니다. Compose로 UI를 그립니다.\n- **State Hoisting**: 상태를 상위로 올리고 이벤트는 아래로 내리는 패턴\n- **LazyColumn**: RecyclerView의 모던 버전\n- **Side Effects**: LaunchedEffect, rememberCoroutineScope\n\n## 3단계: Android Architecture Components (Jetpack)\n- **ViewModel**: 화면 회전 시에도 데이터 유지\n- **Lifecycle**: 생명주기 인식 컴포넌트\n- **Navigation**: Compose Navigation (Single Activity Architecture)\n- **Room**: 로컬 DB (SQLite 추상화)\n\n## 4단계: Architecture & DI\n- **Clean Architecture**: Presentation - Domain - Data 레이어 분리\n- **Hilt (Dagger)**: 의존성 주입 (Dependency Injection) 표준. 안드로이드 개발의 필수 소양.\n\n## 5단계: Networking\n- **Retrofit2**: REST API 통신\n- **OkHttp**: HTTP 클라이언트"
+        },
+        {
+            "type": "BEST_PRACTICE",
+            "source": "Google Codelabs & Philipp Lackner",
+            "content": "# Android 실무 베스트 프랙티스\n\n## 1. XML vs Compose\n- **결론**: 무조건 Compose 하세요.\n- 생산성이 2-3배 차이 납니다. RecyclerView 어댑터 짜던 고통에서 해방되세요.\n\n## 2. 상태 관리 (State Management)\n- `ViewModel`에서 `StateFlow`를 노출하고, Compose UI에서 `collectAsStateWithLifecycle()`로 구독하세요.\n- LiveData는 레거시 취급받고 있습니다 (Flow로 대체).\n\n## 3. 모듈화\n- :app 모듈에 모든 코드를 넣지 마세요.\n- :core:data, :core:ui, :feature:home 등으로 나누어 빌드 속도를 높이세요."
+        },
+        {
+            "type": "COMMUNITY_INSIGHT",
+            "source": "안드로이드 스터디 & GDG Korea",
+            "content": "# 한국 안드로이드 개발 트렌드\n\n## 1. MVI (Model-View-Intent)\n- MVVM을 넘어 MVI 아키텍처(단방향 데이터 흐름)를 도입하는 곳이 많음.\n- Orbit MVI 같은 라이브러리 활용.\n\n## 2. KMP (Kotlin Multiplatform)\n- 안드로이드 로직을 iOS와 공유하려는 시도가 늘어나는 중 (UI는 네이티브, 로직은 공유).\n- 취업 시장에서 KMP 경험이 강력한 무기가 될 수 있음."
+        }
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "technology": "mlops",
+    "displayName": "MLOps (Machine Learning Operations)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "MLOps Engineering (Andrew Ng)",
+            "content": "# 모델을 프로덕션으로 (MLOps)\n\n## 1. Experiment Tracking\n- **Tools**: MLflow, Weights & Biases (WandB).\n- **What to track**: Hyperparameters, Loss Curves, Hardware Usage, Model Artifacts.\n\n## 2. Model Serving\n- **REST API**: FastAPI, Flask. (실시간 추론).\n- **Model Server**: TensorFlow Serving, TorchServe, Triton Inference Server (NVIDIA).\n\n## 3. Monitoring\n- **Data Drift**: 입력 데이터 분포가 학습 때와 달라지는 현상 감지.\n- **Concept Drift**: X -> Y 관계 자체가 변하는 현상.\n\n## 4. Feature Store\n- **Feast**: 학습과 서빙 환경에서 동일한 Feature 값을 제공하기 위한 저장소."
+        }
+    ]
+}

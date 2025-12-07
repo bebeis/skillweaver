@@ -1,0 +1,11 @@
+{
+    "technology": "cs-architecture",
+    "displayName": "Computer Architecture",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Computer Systems: A Programmer's Perspective",
+            "content": "# 컴퓨터 구조 핵심 로드맵\n\n## 1. 데이터 표현\n- **2진수와 16진수**: 비트 조작.\n- **정수 표현**: 2의 보수법 (음수 표현).\n- **부동소수점**: IEEE 754 표준 (실수 오차 발생 원인).\n\n## 2. CPU 구조\n- **ALU**: 산술 논리 연산 장치.\n- **Register**: PC(Program Counter), IR(Instruction Register), SP(Stack Pointer).\n- **Instruction Cycle**: Fetch -> Decode -> Execute.\n\n## 3. 메모리 계층 구조 (Memory Hierarchy)\n- **L1/L2/L3 Cache**: SRAM. 지역성(Locality) 원리 (시간적/공간적 지역성).\n- **Main Memory**: DRAM.\n- **Disk**: HDD/SSD.\n- *\"Cache Hit Ratio를 높이는 코드가 빠르다.\" (배열 순차 접근이 연결 리스트보다 빠른 이유)*"
+        }
+    ]
+}

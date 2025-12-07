@@ -1,0 +1,16 @@
+{
+    "technology": "tailwind",
+    "displayName": "Tailwind CSS",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Tailwind CSS Docs",
+            "content": "# Tailwind CSS 핵심 가이드\n\n## 1단계: 유틸리티 클래스 익히기\n- **Layout**: `flex`, `grid`, `hidden`, `block`, `absolute`, `relative`\n- **Spacing**: `p-4` (padding), `m-4` (margin), `gap-4`\n- **Typography**: `text-xl`, `font-bold`, `text-center`, `tracking-wide`\n- **Color**: `bg-blue-500`, `text-white`, `border-gray-200`\n\n## 2단계: 반응형 디자인 & 상태\n- **Responsive**: `md:flex` (768px 이상), `lg:grid` (1024px 이상). Mobile-first 접근법.\n- **States**: `hover:bg-blue-600`, `focus:ring`, `drak:bg-gray-900`\n\n## 3단계: 커스터마이징 & 재사용\n- **tailwind.config.ts**: `theme.extend`로 커스텀 컬러/폰트 추가\n- **@apply**: CSS 파일에서 유틸리티 클래스 조합하기 (반복 줄이기)\n\n## 4단계: 심화\n- **Arbitrary values**: `w-[320px]` (일회성 값)\n- **Plugins**: `typography` (prose), `forms`"
+        },
+        {
+            "type": "BEST_PRACTICE",
+            "source": "Refactoring UI (Adam Wathan)",
+            "content": "# Tailwind를 싫어하는 사람들을 위한 조언\n\n## 1. 클래스가 너무 길어져요\n- 컴포넌트로 분리하세요. Tailwind의 문제가 아니라 컴포넌트 추상화의 문제입니다.\n- 재사용되는 패턴(버튼 등)은 React 컴포넌트로 만들거나, `@apply`를 쓰거나, `cva`(class-variance-authority) 라이브러리를 쓰세요.\n\n## 2. 디자인 시스템과의 결합\n- `tailwind.config.ts`에 회사Brand 컬러와 Breakpoint를 정의해서 디자인 토큰으로 사용하세요.\n- 디자이너와 소통이 훨씬 쉬워집니다 (`bg-primary-500` = 그 파란색)."
+        }
+    ]
+}

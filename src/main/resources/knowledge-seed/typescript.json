@@ -1,0 +1,16 @@
+{
+    "technology": "typescript",
+    "displayName": "TypeScript",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "TypeScript Handbook + Total TypeScript (Matt Pocock)",
+            "content": "# TypeScript 학습 로드맵\n\n## 1단계: 기본 타입 시스템\n- **Primitive Types**: string, number, boolean\n- **Literal Types**: `const status = 'success'`\n- **Interface vs Type Alias**: 확장성(Interface) vs 유연성(Type)\n- **Union & Intersection**: `|` (OR), `&` (AND)\n\n## 2단계: 제네릭 (Generics)\n- **함수 제네릭**: `function identity<T>(arg: T): T`\n- **제약 조건**: `<T extends HTMLElement>`\n- **Keyof**: 객체의 키를 타입으로 추출\n\n## 3단계: 유틸리티 타입 (Utility Types)\n- **Partial<T>, Required<T>, Readonly<T>**\n- **Pick<T, K>, Omit<T, K>**\n- **Record<K, V>**\n- **ReturnType<T>, Parameters<T>**\n\n## 4단계: 고급 타입 매직 (Type Gymnastics)\n- **Type Guard**: `is` 키워드, `typeof`, `instanceof`\n- **Mapped Types**: `{[K in keyof T]: T[K]}`\n- **Conditional Types**: `T extends U ? X : Y`\n- **Infer**: 타입 추론 (`ReturnType` 구현 원리)"
+        },
+        {
+            "type": "BEST_PRACTICE",
+            "source": "Effective TypeScript (Dan Vanderkam)",
+            "content": "# TypeScript 실무 베스트 프랙티스\n\n## 1. any는 마약이다\n- `any`를 쓰면 TS를 쓰는 의미가 사라짐. 정말 모르겠으면 `unknown`을 쓰고 타입 가드(Type Guard)로 좁혀서 사용.\n- `tsconfig.json`에서 `noImplicitAny: true`는 필수.\n\n## 2. 잉여 속성 체크 (Excess Property Checking)\n- 객체 리터럴을 바로 인자로 넘길 때와 변수에 담아 넘길 때 동작이 다름을 이해해야 함.\n\n## 3. 타입 단언(Type Assertion) 주의\n- `as Type`은 컴파일러의 눈을 가리는 행위. `!` (Non-null assertion)도 마찬가지.\n- 타입 단언보다는 타입 가드나 Optional Chaining (`?.`)을 사용."
+        }
+    ]
+}

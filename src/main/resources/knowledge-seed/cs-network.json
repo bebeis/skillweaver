@@ -1,0 +1,16 @@
+{
+    "technology": "cs-network",
+    "displayName": "Computer Network",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Computer Networking: A Top-Down Approach (Kurose)",
+            "content": "# 네트워크 핵심 로드맵 (Top-Down)\n\n## 1. Application Layer (HTTP/DNS)\n- **HTTP 1.1 vs 2.0 vs 3.0**: Keep-Alive, Multiplexing, UDP 기반 QUIC.\n- **DNS**: Recursive Query vs Iterative Query. A Record, CNAME.\n- **Cookie & Session**: Stateless한 HTTP에서 상태를 유지하는 기술.\n\n## 2. Transport Layer (TCP/UDP)\n- **TCP**: 연결 지향, 신뢰성 보장 (3-way handshake), 흐름 제어(Sliding Window), 혼잡 제어(Slow Start).\n- **UDP**: 비연결형, 빠른 속도 (스트리밍, DNS).\n\n## 3. Network Layer (IP)\n- **IP Address**: IPv4 vs IPv6, CIDR 표기법.\n- **Routing**: OSPF, BGP.\n- **NAT**: 사설 IP와 공인 IP 변환.\n\n## 4. Link Layer & Physical\n- **Ethernet**: Frame 구조, MAC Address.\n- **ARP**: IP 주소로 MAC 주소 알아오기."
+        },
+        {
+            "type": "BEST_PRACTICE",
+            "source": "Tech Interview",
+            "content": "# 면접 단골 질문: 주소창에 www.google.com을 치면?\n1. **DNS**: 로컬 캐시 -> hosts 파일 -> DNS 서버 순으로 IP 조회.\n2. **TCP**: 3-way handshake로 연결 수립 (HTTPS면 SSL 핸드셰이크 추가).\n3. **HTTP**: GET 요청 전송.\n4. **Server**: 웹 서버(Nginx) -> WAS(Tomcat/Node) -> DB 조회 후 응답.\n5. **Browser**: HTML 파싱 -> DOM 트리 생성 -> 렌더링."
+        }
+    ]
+}

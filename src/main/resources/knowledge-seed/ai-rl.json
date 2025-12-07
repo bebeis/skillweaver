@@ -1,0 +1,11 @@
+{
+    "technology": "ai-rl",
+    "displayName": "Reinforcement Learning",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Reinforcement Learning: An Introduction (Sutton & Barto)",
+            "content": "# 강화학습(RL) 핵심 개념\n\n## 1. 기본 요소 (MDP)\n- **State (상태)**, **Action (행동)**, **Reward (보상)**, **Environment (환경)**.\n- **Value Function**: 현재 상태의 가치 (미래 보상의 총합 기대값).\n\n## 2. 알고리즘 분류\n- **Value-based**: Q-Learning, DQN (Deep Q-Network).\n- **Policy-based**: Policy Gradient. 확률적 정책을 직접 학습.\n- **Actor-Critic**: Value(Critic)와 Policy(Actor)를 동시에 학습 (PPO, A3C). 가장 대중적.\n\n## 3. 활용 분야\n- 게임 AI, 로봇 제어, 추천 시스템, 주식 트레이딩."
+        }
+    ]
+}

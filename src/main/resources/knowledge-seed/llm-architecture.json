@@ -1,0 +1,11 @@
+{
+    "technology": "llm-architecture",
+    "displayName": "LLM Architecture Deep Dive",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Attention Is All You Need & LLaMA Papers",
+            "content": "# LLM 아키텍처 상세\n\n## 1. Transformer Core\n- **Self-Attention**: 문장 내 모든 단어 간의 관계(유사도)를 계산 ($Attention(Q, K, V) = softmax(\\frac{QK^T}{\\sqrt{d_k}})V$).\n- **Multi-Head Attention**: 여러 관점에서 어텐션을 수행 (앙상블 효과).\n- **Positional Encoding**: 순서 정보 주입 (Sinosoidal -> Rotary Embedding(RoPE)로 발전).\n\n## 2. Modern Optimizations\n- **Pre-Normalization**: LayerNorm을 Attention 전에 수행 (학습 안정성).\n- **SwiGLU**: ReLU 대신 사용하는 활성화 함수 (LLaMA, PaLM 등 최신 모델).\n- **FlashAttention**: GPU 메모리 IO를 줄여 Attention 속도를 획기적으로 개선.\n- **GQA (Grouped Query Attention)**: MQA(Multi-Query)와 MHA(Multi-Head)의 중간. 추론 속도와 성능의 타협."
+        }
+    ]
+}

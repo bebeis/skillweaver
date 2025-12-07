@@ -1,0 +1,11 @@
+{
+    "technology": "langchain",
+    "displayName": "LangChain Framework",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "LangChain Documentation (Python)",
+            "content": "# LangChain 핵심 컴포넌트\n\n## 1. Model I/O\n- **LLMs vs Chat Models**: 텍스트 입력/출력(LLM) vs 메시지 리스트 입력/메시지 출력(Chat). 최근엔 Chat Model(`ChatOpenAI`)이 표준.\n- **Prompts**: `PromptTemplate`, `ChatPromptTemplate` (System message, Human message 관리).\n\n## 2. Retrieval (RAG Core)\n- **Document Loaders**: PDF, Notion, HTML 등 데이터 로드.\n- **Text Splitters**: 긴 문서를 청크로 자르기 (`RecursiveCharacterTextSplitter` 권장).\n- **Vector Stores**: 임베딩 저장소 (Chroma, FAISS, Qdrant).\n- **Retrievers**: 질문과 유사한 문서 찾아오기.\n\n## 3. Chains\n- **LCEL (LangChain Expression Language)**: `prompt | model | parser` 형태의 파이프라인 문법.\n- **Runnable**: 모든 LangChain 객체는 `invoke`, `stream`, `batch` 메서드를 가짐."
+        }
+    ]
+}

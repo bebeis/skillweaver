@@ -1,0 +1,11 @@
+{
+    "technology": "db-oracle",
+    "displayName": "Oracle Database",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Oracle Docs & Performance Tuning",
+            "content": "# Oracle DB 핵심 특징\n\n## 1. 아키텍처 차이 (vs MySQL)\n- **Process 기반**: MySQL은 Thread 기반(가벼움), Oracle은 Process 기반(무거움, 안정성).\n- **SGA (System Global Area)**: 공유 메모리 영역.\n\n## 2. Optimizer & Hint\n- **CBO (Cost Based Optimizer)**: 비용 기반 최적화가 매우 강력함.\n- **Hint**: `/*+ INDEX(emp idx_emp_sal) */` 처럼 실행 계획을 강제로 제어하는 기능이 발달함.\n\n## 3. PL/SQL\n- 오라클 내장 절차적 언어. 복잡한 비즈니스 로직을 DB 안에서 처리할 때 사용 (성능상 이점 vs 유지보수 단점)."
+        }
+    ]
+}

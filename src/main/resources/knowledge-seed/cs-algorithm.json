@@ -1,0 +1,11 @@
+{
+    "technology": "cs-algorithm",
+    "displayName": "Algorithms",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Introduction to Algorithms (CLRS) & Coding Test",
+            "content": "# 알고리즘 학습 로드맵\n\n## 1. 정렬 (Sorting)\n- **O(N^2)**: Bubble, Selection, Insertion.\n- **O(NlogN)**: Merge Sort (Stable), Quick Sort (평균 빠름, 최악 N^2), Heap Sort.\n\n## 2. 탐색 (Search)\n- **Binary Search**: 정렬된 배열에서 O(logN). Up/Down 게임.\n- **DFS (깊이 우선)**: Stack/재귀. 모든 경로 탐색.\n- **BFS (너비 우선)**: Queue. 최단 경로 보장 (가중치 1일 때).\n\n## 3. 설계 기법\n- **Greedy**: 매 순간 최적의 선택. (ex. 거스름돈, 회의실 배정).\n- **Dynamic Programming (DP)**: 큰 문제를 작은 문제로 쪼개고 결과를 저장(Memoization). (ex. 피보나치, 배낭 문제).\n- **Dijkstra**: 가중치 그래프 최단 경로 (음수 가중치 X).\n\n## 4. 코딩 테스트 팁\n- N이 10만이면 O(NlogN) 이하로 풀어야 함.\n- N이 500이면 O(N^3)도 가능."
+        }
+    ]
+}

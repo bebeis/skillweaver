@@ -1,0 +1,11 @@
+{
+    "technology": "ai-math",
+    "displayName": "Mathematics for AI",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Mathematics for Machine Learning (Deisenroth et al.)",
+            "content": "# 인공지능을 위한 필수 수학\n\n## 1. Linear Algebra (선형대수)\n- **Vector Space**: Basis(기저), Rank(랭크), Linear Independence.\n- **Eigenvalue & Eigenvector**: PCA(주성분 분석)의 핵심 원리.\n- **SVD (Singular Value Decomposition)**: 데이터 압축, 노이즈 제거.\n\n## 2. Calculus (미적분)\n- **Gradient**: 다변수 함수의 변화율.\n- **Jacobian & Hessian**: 1차, 2차 미분 행렬 (최적화에 사용).\n- **Chain Rule**: Backpropagation(역전파)의 수학적 근거.\n\n## 3. Probability & Statistics (확률과 통계)\n- **Bayes' Theorem**: 사전 확률과 사후 확률의 관계.\n- **Maximum Likelihood Estimation (MLE)**: 모델 파라미터 추정의 기본 원리.\n- **Information Theory**: Entropy, KL-Divergence (두 확률 분포의 차이)."
+        }
+    ]
+}

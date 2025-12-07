@@ -1,0 +1,11 @@
+{
+    "technology": "scikit-learn",
+    "displayName": "Scikit-Learn (Machine Learning)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Scikit-Learn User Guide",
+            "content": "# Scikit-Learn 완전 정복\n\n## 1. 통일된 인터페이스 (Estimator API)\n- **fit(X, y)**: 모델 학습\n- **predict(X)**: 예측\n- **transform(X)**: 데이터 변환 (전처리)\n- 모든 모델(LinearRegression, RandomForest, SVM)이 이 인터페이스를 공유함.\n\n## 2. 전처리 (Preprocessing)\n- **StandardScaler**: 평균 0, 분산 1로 정규화 (선형 모델, SVM, 신경망에 필수).\n- **OneHotEncoder**: 범주형 변수를 0과 1의 벡터로 변환.\n- **Pipeline**: 전처리와 모델 학습을 하나의 파이프라인으로 연결하여 데이터 누수(Leakage) 방지.\n\n## 3. 모델 평가 (Metrics)\n- **Classfication**: Accuracy, Precision, Recall, F1-Score, ROC_AUC.\n- **Regression**: MSE(Mean Squared Error), R2 Score."
+        }
+    ]
+}

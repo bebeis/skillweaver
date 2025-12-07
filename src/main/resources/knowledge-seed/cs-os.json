@@ -1,0 +1,11 @@
+{
+    "technology": "cs-os",
+    "displayName": "Operating System",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Operating System Concepts (공룡책)",
+            "content": "# 운영체제 핵심 로드맵\n\n## 1. 프로세스 관리\n- **Process vs Thread**: 자원 공유 여부가 핵심 차이 (Stack만 분리).\n- **Context Switching**: CPU 상태(Register, PC)를 PCB에 저장하고 복구하는 비용.\n- **System Call**: User Mode에서 Kernel Mode로 전환 (파일 읽기, 프로세스 생성).\n\n## 2. 스케줄링 (CPU Scheduling)\n- **Preemptive (선점)**: OS가 강제로 CPU 뺏음 (Round Robin - Time Slice).\n- **Non-Preemptive (비선점)**: 작업이 끝날 때까지 대기 (FCFS).\n\n## 3. 동기화 (Synchronization)\n- **Race Condition**: 두 스레드가 동시에 공유 자원에 접근할 때 발생.\n- **Deadlock (교착 상태)**: 4대 조건 (상호배제, 점유대기, 비선점, 순환대기). 회피법(Banker's Algorithm).\n- **Mutex vs Semaphore**: Mutex는 소유권(Lock)이 있음.\n\n## 4. 메모리 관리\n- **Virtual Memory**: 물리 메모리보다 큰 프로세스 실행 가능. Paging 기법.\n- **Page Fault**: 메모리에 페이지가 없을 때 Disk(Swap Area)에서 가져옴.\n- **Thrashing**: 페이지 교체가 너무 빈번해 CPU가 일을 못하는 상태."
+        }
+    ]
+}

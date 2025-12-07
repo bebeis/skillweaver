@@ -1,0 +1,11 @@
+{
+    "technology": "ml-theory",
+    "displayName": "Machine Learning Theory",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Pattern Recognition and Machine Learning (Bishop)",
+            "content": "# 머신러닝 이론 심화\n\n## 1. Bias-Variance Tradeoff\n- **Bias(편향)**: 모델이 너무 단순해서 데이터의 경향을 못 잡음 (Underfitting).\n- **Variance(분산)**: 모델이 너무 복잡해서 노이즈까지 학습함 (Overfitting).\n- **Goal**: Total Error를 최소화하는 지점을 찾는 것.\n\n## 2. Optimization Algorithms\n- **SGD (Stochastic Gradient Descent)**: 확률적 경사 하강법. Local Minima 탈출 가능성.\n- **Momentum**: 관성을 이용하여 진동을 줄이고 수렴 속도 향상.\n- **Adam**: Momentum + RMSProp. 방향과 스텝 사이즈를 모두 적응적으로 조절.\n\n## 3. Regularization (규제)\n- **L1 (Lasso)**: Feature Selection 효과 (가중치를 0으로 만듦).\n- **L2 (Ridge)**: 가중치 크기를 줄임 (일반화 성능 향상)."
+        }
+    ]
+}

@@ -1,0 +1,21 @@
+{
+    "technology": "spring-framework",
+    "displayName": "Spring Framework & MVC",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "김영한 스프링 완전 정복 로드맵 (인프런)",
+            "content": "# Spring Framework 학습 로드맵 (김영한 로드맵)\n\n## 1단계: 스프링 입문 (스프링 생태계 맛보기)\n- **목표**: 스프링 부트로 웹 서버 실행하고 간단한 웹 앱 만들기\n- 라이브러리, View 환경 설정\n- 스프링 빈과 의존관계\n- 간단한 회원 관리 예제 (메모리 DB)\n\n## 2단계: 스프링 핵심 원리 - 기본편 (필수)\n- **목표**: 객체 지향 원리(SOLD)와 스프링의 관계 이해\n- **IOC, DI 컨테이너**: AppConfig, @Configuration, @Bean\n- **싱글톤 컨테이너**: @Singleton, 상태 유지(Stateful) 설계 주의\n- **컴포넌트 스캔**: @ComponentScan, @Component, @Autowired\n- **의존관계 주입**: 생성자 주입(권장), 수정자 주입, 필드 주입\n- **빈 생명주기 콜백**: @PostConstruct, @PreDestroy\n\n## 3단계: 모든 개발자를 위한 HTTP 웹 기본 지식\n- 인터넷 네트워크\n- URI와 웹 브라우저 요청 흐름\n- HTTP 메서드 (GET, POST, PUT, PATCH, DELETE)\n- HTTP 헤더, 상태 코드 (2xx, 4xx, 5xx)\n\n## 4단계: 스프링 MVC 1편 - 백엔드 웹 개발 핵심 기술\n- **서블릿**: HttpServletRequest, HttpServletResponse\n- **스프링 MVC 구조**: DispatcherServlet, HandlerMapping, ViewResolver\n- **MVC 기능**: 요청 매핑, HTTP 요청 데이터 조회, HTTP 응답 데이터 생성\n\n## 5단계: 스프링 MVC 2편 - 백엔드 웹 개발 활용 기술\n- **타임리프 (Thymeleaf)**: 서버 사이드 렌더링\n- **메시지, 국제화**\n- **검증 (Validation)**: BindingResult, Bean Validation (@NotBlank, @NotNull)\n- **로그인 처리**: 쿠키, 세션, 필터(Filter), 인터셉터(Interceptor)\n- **예외 처리**: @ExceptionHandler, @ControllerAdvice\n- **파일 업로드**\n\n## 6단계: 스프링 핵심 원리 - 고급편\n- 쓰레드 로컬 (ThreadLocal)\n- 템플릿 메서드 패턴, 전략 패턴\n- 프록시 패턴과 데코레이터 패턴\n- 빈 후처리기 (BeanPostProcessor)\n- 스프링 AOP (Aspect Oriented Programming)"
+        },
+        {
+            "type": "BEST_PRACTICE",
+            "source": "토비의 스프링 3.1 + 실무 가이드",
+            "content": "# Spring Framework 심화 학습 가이드 (토비의 스프링)\n\n## 학습 전략 (이 책은 바이블입니다)\n- **초급자**: 처음부터 정독하기보다는 1장(오브젝트와 의존관계), 2장(테스트), 3장(템플릿)을 통해 스프링의 철학(DI, PSA)을 이해하는 데 집중하세요.\n- **중급자**: AOP, 서비스 추상화, 예외 처리를 깊이 있게 학습하세요.\n\n## 핵심 개념 심화\n\n### 1. 제어의 역전(IoC)과 의존관계 주입(DI)\n- **오브젝트 팩토리**: 객체의 생성과 관계 설정의 책임을 분리.\n- **의존관계 주입**: 런타임 시점에 의존 오브젝트를 연결.\n\n### 2. 서비스 추상화 (PSA)\n- **Portable Service Abstraction**: 환경과 구현 기술의 변화에 관계없이 일관된 방식으로 기술을 다룰 수 있게 해주는 것.\n- 예: 트랜잭션 추상화 (JDBC, JPA, Hibernate 등 무엇을 쓰든 @Transactional로 통일)\n\n### 3. AOP (Aspect Oriented Programming)\n- **관점 지향 프로그래밍**: 핵심 로직과 부가 기능(로깅, 트랜잭션, 보안)의 분리.\n- **프록시**: 타겟을 감싸서 요청을 가로채는 대리자.\n\n## 실무 팁: POJO 프로그래밍\n- 특정 기술(Servlet, EJB 등)에 종속되지 않은 순수한 자바 객체로 비즈니스 로직을 구현하라.\n- 스프링은 POJO를 위협하지 않으면서 엔터프라이즈 서비스를 제공(PSA)하는 것이 목표다."
+        },
+        {
+            "type": "COMMUNITY_INSIGHT",
+            "source": "한국 스프링 사용자 모임 (KSUG)",
+            "content": "# 실무 Spring MVC 개발 팁\n\n## 1. DTO (Data Transfer Object) 사용\n- **필수**: 엔티티를 API 응답으로 직접 반환하지 마세요. (무한 루프, 스펙 변경 시 API 변경 등 문제)\n- 요청용 DTO (CreateUserRequest)와 응답용 DTO (UserResponse)를 분리하세요.\n\n## 2. 레이어드 아키텍처 준수\n- **Controller**: 요청 검증, 서비스 호출, 응답 반환 (비즈니스 로직 X)\n- **Service**: 트랜잭션 단위, 비즈니스 로직 수행 (웹 기술 종속 X)\n- **Repository**: DB 접근\n\n## 3. 예외 처리 전략\n- `@ControllerAdvice` + `@ExceptionHandler`로 전역 예외 처리.\n- `ErrorResponse` 객체를 정의하여 일관된 에러 응답 포맷(code, message) 유지.\n\n## 4. 로깅\n- `System.out.println` 절대 금지. `Slf4j` 사용.\n- 운영 환경에서는 INFO 레벨 이상만 남기도록 설정."
+        }
+    ]
+}

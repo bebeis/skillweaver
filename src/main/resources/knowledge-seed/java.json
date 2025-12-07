@@ -1,0 +1,21 @@
+{
+    "technology": "java",
+    "displayName": "Java",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "자바의 정석 + 남궁성 / 자바의 신",
+            "content": "# Java 학습 로드맵 (정석 코스)\n\n## 1단계: 자바 기초 (생활코딩/자바의 정석 기초편)\n- **환경 설정**: JDK 설치, IntelliJ IDEA, JVM 개념\n- **변수와 연산자**: 기본형(Primitive) vs 참조형(Reference)\n- **조건문과 반복문**: if, switch, for, while\n- **배열**: 1차원, 2차원 배열, Arrays 클래스\n\n## 2단계: 객체지향 프로그래밍 1 (OOP 기초)\n- **클래스와 객체**: 인스턴스화, 생성자\n- **변수의 종류**: 클래스 변수(static), 인스턴스 변수, 지역 변수\n- **메서드**: 오버로딩, 가변인자\n\n## 3단계: 객체지향 프로그래밍 2 (OOP 핵심)\n- **상속 (Inheritance)**: extends, super, 오버라이딩\n- **캡슐화 (Encapsulation)**: 접근 제어자, getter/setter\n- **다형성 (Polymorphism)**: 참조변수의 형변환, instanceof\n- **추상 클래스와 인터페이스**: abstract, interface, 다중 상속의 문제 해결\n- **내부 클래스**: 인스턴스 클래스, 스태틱 클래스, 익명 클래스\n\n## 4단계: 자바 심화 (Java 8+)\n- **예외 처리**: try-catch-finally, throws, 사용자 정의 예외\n- **java.lang 패키지**: Object 클래스(equals, hashCode), String, Wrapper\n- **컬렉션 프레임워크**: List(ArrayList), Set(HashSet), Map(HashMap)\n- **제네릭스 (Generics)**: 타입 파라미터, 와일드카드\n- **람다와 스트림**: 함수형 인터페이스, Stream API (map, filter, reduce)\n\n## 5단계: 모던 자바 (실무 필수)\n- **Optional**: null 처리의 표준\n- **날짜와 시간**: java.time 패키지 (LocalDate, LocalDateTime)\n- **직렬화**: Serializable, JSON 라이브러리 (Jackson)\n- **쓰레드와 동시성**: Thread, Runnable, ExecutorService"
+        },
+        {
+            "type": "BEST_PRACTICE",
+            "source": "Effective Java (조슈아 블로크)",
+            "content": "# Java 베스트 프랙티스 (Effective Java 요약)\n\n## 객체 생성과 파괴\n- 생성자 대신 정적 팩터리 메서드를 고려하라 (ex. `List.of`, `Optional.of`)\n- 생성자에 매개변수가 많다면 빌더 패턴을 고려하라 (Lombok @Builder)\n- 불필요한 객체 생성을 피하라 (String 리터럴 사용, 박싱된 기본 타입 주의)\n\n## 모든 객체의 공통 메서드\n- equals를 재정의하려거든 hashCode도 재정의하라 (Lombok @EqualsAndHashCode)\n- toString을 항상 재정의하라 (디버깅 용이성)\n\n## 클래스와 인터페이스\n- 클래스와 멤버의 접근 권한을 최소화하라 (private 우선)\n- public 클래스에서는 public 필드가 아닌 접근자(getter) 메서드를 사용하라\n- 변경 가능성을 최소화하라 (불변 객체 지향 - final)\n- 상속보다는 컴포지션(조합)을 사용하라\n\n## 제네릭\n- 로 타입(raw type)은 사용하지 말라 (`List` 대신 `List<String>`)\n- 비검사 경고를 제거하라 (@SuppressWarnings 최소화)\n\n## 람다와 스트림\n- 익명 클래스보다는 람다를 사용하라\n- 스트림은 주의해서 사용하라 (가독성 해칠 수 있음)\n- 스트림에서는 부작용 없는 함수를 사용하라"
+        },
+        {
+            "type": "COMMUNITY_INSIGHT",
+            "source": "한국 자바 개발자 커뮤니티 (OKKY 등)",
+            "content": "# 실무 Java 개발자 팁\n\n## 1. Lombok 올바르게 사용하기\n- **@Data 지양**: @ToString, @EqualsAndHashCode, @Getter, @Setter, @RequiredArgsConstructor를 모두 포함하므로 무겁고, 양방향 연관관계 시 순환 참조 위험.\n- **@Setter 지양**: 객체의 무분별한 변경을 막기 위해 필요한 필드에만 생성하거나, 별도의 변경 메서드(updateName 등) 사용.\n- **@NoArgsConstructor(access = AccessLevel.PROTECTED)**: JPA 엔티티에서 기본 생성자는 필수지만, 외부에서 무분별한 생성을 막기 위해 protected로 설정.\n\n## 2. Null 처리\n- **Optional 남용 금지**: 필드에 Optional 사용 지양, 리턴 타입으로만 사용.\n- **파라미터 검증**: `Objects.requireNonNull` 또는 Spring의 `Assert` 활용.\n\n## 3. 컬렉션 초기화\n- 사이즈를 알 수 있다면 초기 용량을 설정하여 리사이징 오버헤드 방지.\n  `new ArrayList<>(100)`\n\n## 4. 추천 도서 및 강의\n- **입문**: 자바의 정석 (남궁성) - 바이블\n- **중급**: 이펙티브 자바 3판 - 필독서\n- **고급**: 자바 병렬 프로그래밍 (Java Concurrency in Practice)"
+        }
+    ]
+}

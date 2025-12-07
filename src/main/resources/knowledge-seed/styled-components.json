@@ -1,0 +1,11 @@
+{
+    "technology": "styled-components",
+    "displayName": "Styled Components (CSS-in-JS)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Styled Components Docs",
+            "content": "# Styled Components 학습 포인트\n\n## 1단계: 기본 사용법\n- **Tagged Template Literal**: `styled.div` + 백틱\n- **Props 전달**: `color: ${props => props.primary ? 'blue' : 'gray'}`\n- **Extending Styles**: `styled(Button)`으로 기존 스타일 상속 및 확장\n\n## 2단계: 테마와 글로벌 스타일\n- **ThemeProvider**: 앱 전역에 Theme(colors, fonts) 공급\n- **GlobalStyle**: `createGlobalStyle`로 reset.css 등 적용\n\n## 3단계: 서버 사이드 렌더링 (SSR)\n- **Next.js 설정**: 스타일이 로드되기 전에 HTML이 먼저 날아오면 깜빡임(FOUC) 발생. `ServerStyleSheet` 설정 필요 (Registry 구현).\n- *주의: Next.js App Router(RSC)환경에서는 CSS-in-JS 라이브러리 지원이 제한적일 수 있음(Emotion/Styled-components 최신 버전 확인 필요).*"
+        }
+    ]
+}

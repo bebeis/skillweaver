@@ -1,0 +1,11 @@
+{
+    "technology": "cs-datastructure",
+    "displayName": "Data Structures",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Interview Prep Standard",
+            "content": "# 자료구조 핵심 요약 (Big-O)\n\n## 1. 선형 구조\n- **Array**: 접근 O(1), 삽입/삭제 O(N). 인덱스로 빠른 조회.\n- **LinkedList**: 접근 O(N), 삽입/삭제 O(1) (위치 알 때). 메모리 불연속.\n- **Stack (LIFO)**: DFS, 함수 호출 스택, 괄호 검사.\n- **Queue (FIFO)**: BFS, 작업 대기열.\n\n## 2. 비선형 구조\n- **Tree**: 계층 구조. Binary Search Tree (평균 탐색 O(logN)).\n- **Heap**: 우선순위 큐 구현체. 최대/최소값 찾기 O(1), 삽입/삭제 O(logN).\n- **Graph**: 노드와 엣지. 인접 행렬 vs 인접 리스트.\n\n## 3. 해시 (Hash)\n- **HashTable**: Key-Value. 평균 접근/삽입/삭제 O(1). 최악 O(N) (충돌).\n- **충돌 해결**: Chaining (연결 리스트), Open Addressing (다른 빈칸 찾기)."
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+{
+    "technology": "react",
+    "displayName": "React",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "React.dev (New Docs)",
+            "content": "# React 완벽 가이드 (2024)\n\n## 1단계: Thinking in React\n- UI를 컴포넌트 계층 구조로 나누기\n- 최소한의 State 파악하기 (DRY 원칙)\n- State 위치 정하기 (Lifting State Up)\n\n## 2단계: Hooks 마스터\n- **useState**: 상태 관리의 기본. 불변성 유지 필수.\n- **useEffect**: 사이드 이펙트 처리. 의존성 배열(deps) 관리, Clean-up 함수.\n- **useRef**: DOM 접근 또는 렌더링을 유발하지 않는 값 저장.\n- **useMemo / useCallback**: 성능 최적화 (불필요한 재계산/재생성 방지).\n- **useContext**: Prop Drilling 해결.\n\n## 3단계: 렌더링 성능 최적화\n- **React.memo**: Props가 같으면 리렌더링 방지.\n- **Virtual DOM**: React가 변경사항을 감지하고 DOM을 업데이트하는 방식.\n- **Key Prop**: 리스트 렌더링 시 고유 Key가 중요한 이유 (인덱스 사용 지양).\n\n## 4단계: 패턴\n- **Custom Hooks**: 로직 재사용의 핵심 (ex. `useWindowSize`, `useFetch`).\n- **Compound Components**: 유연한 UI 설계 (ex. `<Select><Option /></Select>`)."
+        },
+        {
+            "type": "BEST_PRACTICE",
+            "source": "Overreacted.io (Dan Abramov)",
+            "content": "# React 개발자가 자주 하는 실수\n\n## 1. useEffect에 모든 걸 떄려박기\n- 데이터 변환이나 필터링은 렌더링 중에 하세요. `useEffect`는 외부 시스템(API, DOM)과 동기화할 때만 씁니다.\n- 불필요한 useEffect는 'Waterfall' 현상과 깜빡임의 주범.\n\n## 2. State 중복\n- `firstName`, `lastName`, `fullName`을 모두 State로 관리하지 마세요.\n- `fullName = firstName + lastName`으로 렌더링 중에 계산하세요 (Derived State).\n\n## 3. stale closure\n- `useEffect`나 `useCallback`에서 의존성 배열을 비우면 옛날 State 값을 참조하는 버그 발생."
+        }
+    ]
+}

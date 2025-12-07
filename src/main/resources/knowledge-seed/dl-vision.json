@@ -1,0 +1,11 @@
+{
+    "technology": "dl-vision",
+    "displayName": "Computer Vision (Deep Learning)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "CS231n (Stanford) & Papers",
+            "content": "# 컴퓨터 비전 모델의 진화\n\n## 1. CNN Architectures\n- **ResNet (2015)**: Skip Connection으로 Vanishing Gradient 해결 -> 152층까지 적층.\n- **EfficientNet**: Depth, Width, Resolution을 복합적으로 스케일링 (Compound Scaling).\n\n## 2. Vision Transformer (ViT)\n- **Key Idea**: \"An Image is Worth 16x16 Words\". 이미지를 패치로 쪼개서 트랜스포머에 넣음.\n- **Trend**: CNN과 Transformer의 하이브리드 또는 Pure Transformer가 SOTA 장악.\n\n## 3. Tasks\n- **Object Detection**: YOLO (One-stage, 빠름) vs Faster R-CNN (Two-stage, 정확).\n- **Segmentation**: U-Net (의료 영상), Mask R-CNN."
+        }
+    ]
+}

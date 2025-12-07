@@ -1,0 +1,11 @@
+{
+    "technology": "db-mysql",
+    "displayName": "MySQL (RDBMS)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Real MySQL 8.0",
+            "content": "# MySQL 심화 로드맵\n\n## 1. 아키텍처\n- **MySQL Engine**: 커넥션 핸들러, SQL 파서, 옵티마이저 (두뇌).\n- **Storage Engine (InnoDB)**: 실제 데이터를 디스크에 저장/읽기 (팔/다리).\n\n## 2. InnoDB 스토리지 엔진\n- **PK Clustering**: PK순으로 물리적 정렬. PK 검색이 매우 빠름.\n- **MVCC (Multi Version Concurrency Control)**: Undo Log를 이용해 트랜잭션 격리 수준(Read Committed, Repeatable Read)을 구현. Lock 없는 일관된 읽기.\n- **Buffer Pool**: 데이터와 인덱스를 메모리에 캐싱.\n\n## 3. 쿼리 튜닝\n- **Explain**: 실행 계획 분석 (type: ALL, index, range, ref, eq_ref, const).\n- **Covering Index**: 쿼리에 필요한 모든 컬럼이 인덱스에 있어서 테이블 접근 없이 인덱스만으로 처리하는 것 (매우 빠름)."
+        }
+    ]
+}

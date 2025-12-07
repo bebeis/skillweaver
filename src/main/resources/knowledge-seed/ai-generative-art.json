@@ -1,0 +1,11 @@
+{
+    "technology": "ai-generative-art",
+    "displayName": "Generative AI (Image/Audio)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "CVPR Papers & Hugging Face Diffusers",
+            "content": "# 생성 모델의 계보\n\n## 1. VAE (Variational AutoEncoder)\n- **Encoder-Decoder**: 입력을 Latent Vector(평균, 분산)로 압축 후 복원.\n- **Reparameterization Trick**: 역전파를 가능하게 하는 트릭.\n\n## 2. GAN (Generative Adversarial Networks)\n- **Generator vs Discriminator**: 위조지폐범과 경찰의 경쟁 학습 (Minimax Game).\n- **Is Mode Collapse**: 생성자가 한 가지 이미지만 뱉는 현상 (학습 불안정).\n\n## 3. Diffusion Model (SOTA)\n- **DDPM (Denoising Diffusion Probabilistic Models)**: 노이즈를 조금씩 제거하며 이미지를 생성.\n- **Stable Diffusion (Latent Diffusion)**: 픽셀 공간이 아닌 Latent 공간에서 확산 과정을 수행하여 속도 개선.\n- **ControlNet**: Canny Edge, Pose, Depth 등을 조건(Control)으로 주어 생성 결과 제어."
+        }
+    ]
+}

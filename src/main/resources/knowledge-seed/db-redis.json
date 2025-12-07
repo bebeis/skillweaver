@@ -1,0 +1,11 @@
+{
+    "technology": "db-redis",
+    "displayName": "Redis (In-Memory)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "Redis Docs",
+            "content": "# Redis 완벽 가이드\n\n## 1. 자료구조 활용\n- **String**: 단순 캐싱 (Key-Value).\n- **List**: 메시지 큐 (LPUSH, RPOP).\n- **Set**: 중복 제거, 교집합/합집합.\n- **Sorted Set (ZSet)**: 실시간 랭킹 (Score 기반 정렬).\n\n## 2. 주의사항 (Single Thread)\n- Redis는 싱글 스레드이므로 오래 걸리는 명령어(O(N))를 실행하면 전체가 멈춤.\n- `KEYS *` 대신 `SCAN` 사용 필수.\n\n## 3. 캐시 전략\n- **Look Aside (Lazy Loading)**: 앱이 캐시 확인 -> 없으면 DB 조회 -> 캐시 저장.\n- **Write Back**: 캐시에 모아서 DB에 한 번에 저장 (쓰기 성능 UP, 데이터 유실 위험)."
+        }
+    ]
+}

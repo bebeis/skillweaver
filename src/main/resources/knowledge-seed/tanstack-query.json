@@ -1,0 +1,11 @@
+{
+    "technology": "tanstack-query",
+    "displayName": "TanStack Query (React Query)",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "TanStack Query Docs (TkDodo's Blog)",
+            "content": "# React Query: 서버 상태 관리의 표준\n\n## 왜 필요한가?\n- 클라이언트 상태(UI, 다크모드)와 **서버 상태(DB 데이터)** 는 다릅니다.\n- 서버 상태는 비동기적이고, 언제든 오래된(Stale) 데이터가 될 수 있으며, 다른 사람이 바꿀 수도 있습니다.\n- React Query는 **Caching, Deduping(중복제거), Background Update**를 자동으로 해줍니다.\n\n## 핵심 개념\n- **Query Key**: 캐싱의 기준이 되는 키. 배열 형태 `['todos', 1]` 권장.\n- **Stale Time**: 데이터가 '신선함'을 유지하는 시간. 이 시간이 지나면 백그라운드에서 다시 가져옴 (기본값 0).\n- **Cache Time**: 언마운트 후 캐시가 메모리에 남는 시간 (기본값 5분).\n\n## 주요 API\n- **useQuery**: 데이터 조회 (GET). 로딩(`isLoading`), 에러(`isError`) 상태 자동 제공.\n- **useMutation**: 데이터 변경 (POST, PUT, DELETE). 성공 시 `invalidateQueries`로 관련 쿼리 무효화(새로고침) 필수.\n\n## TkDodo의 팁\n- `useQuery`를 컴포넌트에 직접 쓰지 말고, 커스텀 훅으로 감싸서 사용하세요 (query key 관리 용이)."
+        }
+    ]
+}

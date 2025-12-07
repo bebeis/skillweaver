@@ -1,0 +1,21 @@
+{
+    "technology": "spring-data",
+    "displayName": "Spring Data & Database Access",
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "김영한 스프링 DB/JPA 로드맵",
+            "content": "# Spring Data & JPA 학습 로드맵\n\n## 1단계: 스프링 DB 1편 - 데이터 접근 핵심 원리\n- **JDBC 이해**: 드라이버, 커넥션, PreparedStatement\n- **DataSource**: 커넥션 풀(HikariCP) 이해 및 설정\n- **트랜잭션**: 트랜잭션 매니저, @Transactional, 트랜잭션 전파(Propagation)\n- **자바 예외**: 체크 예외 vs 언체크(런타임) 예외, 스프링 예외 추상화\n\n## 2단계: 스프링 DB 2편 - 데이터 접근 활용 기술\n- **JdbcTemplate**: JDBC 반복 코드 제거\n- **MyBatis**: SQL Mapper 사용법 (레거시 프로젝트 대비)\n- **JPA 기초 맛보기**: ORM과 SQL Mapper의 차이\n\n## 3단계: 자바 ORM 표준 JPA 프로그래밍 (필수)\n- **JPA 내부 동작**: 영속성 컨텍스트, 엔티티 생명주기\n- **엔티티 매핑**: @Entity, @Table, @Column, @Id\n- **연관관계 매핑**: 단방향 vs 양방향, 연관관계의 주인\n- **프록시와 지연 로딩(Lazy Loading)**: N+1 문제의 원인과 해결\n- **JPQL**: 객체지향 쿼리 언어\n\n## 4단계: 실전! 스프링 부트와 JPA 활용 1, 2\n- **도메인 모델 설계**: 엔티티 설계 원칙\n- **API 개발**: 엔티티 직접 노출 금지, DTO 변환, 지연 로딩과 성능 최적화\n- **OSIV (Open Session Leght View)**: 성능 이슈와 해결\n\n## 5단계: 실전! 스프링 데이터 JPA\n- **JpaRepository**: 공통 인터페이스 기능\n- **쿼리 메서드**: 메서드 이름으로 쿼리 생성\n- **페이징과 정렬**: Page, Slice\n- **사용자 정의 리포지토리**\n\n## 6단계: 실전! Querydsl\n- **Querydsl 설정**: QClass 생성\n- **동적 쿼리**: BooleanBuilder, Where 다중 파라미터\n- **실무 활용**: 스프링 데이터 JPA와 Querydsl 결합"
+        },
+        {
+            "type": "ROADMAP",
+            "source": "Spring Batch 공식 문서 + 실무 가이드",
+            "content": "# Spring Batch 학습 로드맵 (대용량 처리)\n\n## 1단계: 배치 핵심 개념\n- **Batch vs Web**: 비간섭 실행, 대용량 데이터, 자동화\n- **Job**: 배치 작업의 전체 단위\n- **Step**: Job 내부의 실질적 처리 단계\n- **JobRepository**: 메타데이터 저장소 (실패 지점 기록)\n\n## 2단계: Chunk 지향 처리\n- **Chunk**: 데이터를 일정 단위(Chunk Size)로 끊어서 읽고/가공하고/쓰기\n- **ItemReader**: 데이터 읽기 (JdbcPagingItemReader, JpaPagingItemReader)\n- **ItemProcessor**: 데이터 가공 (필터링, 변환)\n- **ItemWriter**: 데이터 쓰기 (JdbcBatchItemWriter)\n- **Transaction**: Chunk 단위 트랜잭션 커밋\n\n## 3단계: 성능 최적화와 확장\n- **Parallel Steps**: 멀티 쓰레드 처리\n- **Partitioning**: 데이터 분할 처리 (Master-Slave)\n- **배치 실패와 재시도**: Skip, Retry 전략\n\n## 추천 리소스\n- 기억보단 기록을 (이동욱님) 블로그: Spring Batch 시리즈"
+        },
+        {
+            "type": "COMMUNITY_INSIGHT",
+            "source": "우아한형제들, 토스 기술 블로그",
+            "content": "# 실무 DB 접근 기술 베스트 프랙티스\n\n## 1. N+1 문제 해결 (영원한 숙제)\n- **문제**: 목록 조회(1) 후 각 아이템의 연관 데이터 조회(N) 쿼리가 나가는 현상.\n- **해결 1 (가장 추천)**: `Fetch Join` 사용 (JPQL: `select m from Member m join fetch m.team`)\n- **해결 2**: `@EntityGraph` 사용\n- **해결 3**: `Batch Size` 설정 (`spring.jpa.properties.hibernate.default_batch_fetch_size: 100`)\n\n## 2. JPA vs MyBatis\n- 신규 프로젝트는 **JPA + Querydsl** 조합이 표준.\n- 복잡한 통계성 쿼리나 레거시 DB 매핑이 필요한 경우 **MyBatis**나 **JdbcTemplate**을 혼용.\n\n## 3. 트랜잭션 관리\n- Service 계층의 비즈니스 메서드 시작 시 `@Transactional`을 걸어라.\n- 조회 전용 메서드는 `@Transactional(readOnly = true)`로 성능 최적화 (플러시 스킵, 더티 체킹 스킵).\n\n## 4. Querydsl 사용 이유\n- JPQL은 문자열이라 컴파일 시점 오류 발견 불가.\n- Querydsl은 자바 코드로 쿼리를 작성하므로 **컴파일 시점 타입 체크**와 **자동 완성** 지원.\n- 동적 쿼리 작성이 압도적으로 편리함."
+        }
+    ]
+}
