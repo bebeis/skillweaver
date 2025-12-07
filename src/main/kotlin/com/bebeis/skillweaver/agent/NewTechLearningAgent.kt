@@ -27,6 +27,7 @@ import com.bebeis.skillweaver.core.domain.technology.TechnologyCategory
 import com.bebeis.skillweaver.core.storage.member.MemberRepository
 import com.bebeis.skillweaver.core.storage.member.MemberSkillRepository
 import com.bebeis.skillweaver.core.storage.technology.TechnologyRepository
+import com.bebeis.skillweaver.agent.tools.KnowledgeSearchTool
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Agent
@@ -44,15 +45,21 @@ import java.util.Locale
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import com.bebeis.skillweaver.agent.specialist.ResourceCuratorAgent
+import com.bebeis.skillweaver.agent.specialist.ResourceCurationRequest
+import com.bebeis.skillweaver.agent.specialist.TechResearchAgent
 import kotlin.math.max
 import kotlin.math.min
 
-@Agent(description = "Generate personalized learning plan for new technology")
+@Agent(description = "Generate personalized learning plan for new technology with RAG and Multi-Agent support")
 @Component
 class NewTechLearningAgent(
     private val memberRepository: MemberRepository,
     private val technologyRepository: TechnologyRepository,
-    private val memberSkillRepository: MemberSkillRepository
+    private val memberSkillRepository: MemberSkillRepository,
+    private val knowledgeSearchTool: KnowledgeSearchTool? = null,
+    private val techResearchAgent: TechResearchAgent? = null,
+    private val resourceCuratorAgent: ResourceCuratorAgent? = null
 ) {
     
     private val logger = LoggerFactory.getLogger(NewTechLearningAgent::class.java)
@@ -166,6 +173,148 @@ class NewTechLearningAgent(
         6. Estimate realistic preparation time based on member's experience level
     """.trimIndent()
     
+    /**
+     * RAG 지식 검색을 통해 커리큘럼 생성에 필요한 컨텍스트를 수집합니다.
+     * KnowledgeSearchTool이 없으면 빈 문자열을 반환합니다.
+     */
+    private fun fetchRagContext(technology: String): String {
+        if (knowledgeSearchTool == null) {
+            logger.debug("KnowledgeSearchTool not available, skipping RAG context")
+            return ""
+        }
+        
+        return try {
+            val roadmapResults = knowledgeSearchTool.searchRoadmap(technology)
+            val bestPractices = knowledgeSearchTool.searchBestPractices(technology)
+            
+            if (roadmapResults.isEmpty() && bestPractices.isEmpty()) {
+                logger.debug("No RAG results found for technology: {}", technology)
+                return ""
+            }
+            
+            buildString {
+                if (roadmapResults.isNotEmpty()) {
+                    appendLine("=== Curated Learning Roadmap from Knowledge Base ===")
+                    roadmapResults.take(3).forEach { result ->
+                        appendLine("- ${result.content.take(500)}")
+                        appendLine("  (Source: ${result.source})")
+                    }
+                    appendLine()
+                }
+                
+                if (bestPractices.isNotEmpty()) {
+                    appendLine("=== Best Practices from Knowledge Base ===")
+                    bestPractices.take(3).forEach { result ->
+                        appendLine("- ${result.content.take(300)}")
+                    }
+                    appendLine()
+                }
+            }
+        } catch (e: Exception) {
+            logger.warn("Failed to fetch RAG context for {}: {}", technology, e.message)
+            ""
+        }
+    }
+    
+    /**
+     * RAG 컨텍스트가 있을 경우 프롬프트에 포함할 참조 섹션을 생성합니다.
+     */
+    private fun buildRagPromptSection(ragContext: String): String {
+        if (ragContext.isBlank()) return ""
+        
+        return """
+            
+            === Knowledge Base Reference (Use this as authoritative guidance) ===
+            $ragContext
+            
+            IMPORTANT: Incorporate insights from the Knowledge Base above when creating the curriculum.
+            Prefer structured roadmaps and best practices from the knowledge base over generic advice.
+        """.trimIndent()
+    }
+    
+    /**
+     * 전문 Agent들을 호출하여 기술 조사 및 리소스 큐레이션을 수행합니다.
+     * Optional 패턴으로 Agent가 없으면 스킵합니다.
+     */
+    private fun fetchSpecialistInsights(
+        technology: String,
+        profile: MemberProfile,
+        context: OperationContext
+    ): SpecialistInsights {
+        logger.info("Fetching specialist insights for: {}", technology)
+        
+        // 기술 조사 Agent 호출
+        val techResearch = techResearchAgent?.let { agent ->
+            try {
+                agent.researchTechnologyTrends(technology, context)
+            } catch (e: Exception) {
+                logger.warn("TechResearchAgent failed for {}: {}", technology, e.message)
+                null
+            }
+        }
+        
+        // 리소스 큐레이션 Agent 호출  
+        val curatedResources = resourceCuratorAgent?.let { agent ->
+            try {
+                val request = ResourceCurationRequest(
+                    technology = technology,
+                    learnerLevel = profile.experienceLevel,
+                    preferKorean = profile.learningPreference.preferKorean
+                )
+                agent.curateResources(request, context)
+            } catch (e: Exception) {
+                logger.warn("ResourceCuratorAgent failed for {}: {}", technology, e.message)
+                null
+            }
+        }
+        
+        return SpecialistInsights(
+            techResearch = techResearch,
+            curatedResources = curatedResources
+        )
+    }
+    
+    /**
+     * 전문 Agent 인사이트를 프롬프트에 포함할 섹션으로 변환
+     */
+    private fun buildSpecialistPromptSection(insights: SpecialistInsights): String {
+        if (insights.isEmpty()) return ""
+        
+        return buildString {
+            insights.techResearch?.let { research ->
+                appendLine()
+                appendLine("=== Technology Research Insights (from TechResearchAgent) ===")
+                appendLine("Current Version: ${research.currentVersion}")
+                appendLine("Key Trends: ${research.keyTrends.joinToString(", ")}")
+                appendLine("Industry Adoption: ${research.industryAdoption}")
+                appendLine("Common Pitfalls: ${research.commonPitfalls.joinToString("; ")}")
+                appendLine("Recommended Learning Time: ${research.estimatedLearningWeeks} weeks")
+                appendLine()
+            }
+            
+            insights.curatedResources?.let { resources ->
+                appendLine("=== Curated Resources (from ResourceCuratorAgent) ===")
+                if (resources.officialDocs.isNotEmpty()) {
+                    appendLine("Official Docs: ${resources.officialDocs.take(2).joinToString(", ") { it.title }}")
+                }
+                if (resources.videoCourses.isNotEmpty()) {
+                    appendLine("Video Courses: ${resources.videoCourses.take(2).joinToString(", ") { it.title }}")
+                }
+                appendLine()
+            }
+        }
+    }
+    
+    /**
+     * 전문 Agent 인사이트 데이터 클래스
+     */
+    data class SpecialistInsights(
+        val techResearch: com.bebeis.skillweaver.agent.specialist.TechResearchResult?,
+        val curatedResources: com.bebeis.skillweaver.agent.specialist.CuratedResources?
+    ) {
+        fun isEmpty(): Boolean = techResearch == null && curatedResources == null
+    }
+    
     @Action
     fun extractMemberProfile(
         request: LearningRequest,
@@ -246,6 +395,13 @@ class NewTechLearningAgent(
         
         val weeklyHours = profile.weeklyCapacityMinutes / 60
         
+        // RAG 지식 검색
+        val ragContext = fetchRagContext(techContext.displayName)
+        val ragSection = buildRagPromptSection(ragContext)
+        if (ragContext.isNotBlank()) {
+            logger.info("RAG context found for {}, enhancing prompt", techContext.displayName)
+        }
+        
         return context.ai()
             .withLlm(gpt41Mini)
             .withTools(CoreToolGroups.WEB)
@@ -257,6 +413,7 @@ class NewTechLearningAgent(
                 
                 Study these curriculum examples for quality reference:
                 $curriculumFewShotExamples
+                $ragSection
                 
                 Now generate a QUICK learning curriculum for ${techContext.displayName}.
                 
@@ -736,6 +893,13 @@ class NewTechLearningAgent(
         
         val weeklyHours = profile.weeklyCapacityMinutes / 60
         
+        // RAG 지식 검색
+        val ragContext = fetchRagContext(techContext.displayName)
+        val ragSection = buildRagPromptSection(ragContext)
+        if (ragContext.isNotBlank()) {
+            logger.info("RAG context found for {}, enhancing standard curriculum prompt", techContext.displayName)
+        }
+        
         return context.ai()
             .withLlm(gpt41Mini)
             .withTools(CoreToolGroups.WEB)
@@ -747,6 +911,7 @@ class NewTechLearningAgent(
                 
                 Study these high-quality curriculum examples for reference:
                 $curriculumFewShotExamples
+                $ragSection
                 
                 Now generate a STANDARD learning curriculum for ${techContext.displayName}.
                 
@@ -920,6 +1085,13 @@ class NewTechLearningAgent(
         
         val weeklyHours = profile.weeklyCapacityMinutes / 60
         
+        // RAG 지식 검색
+        val ragContext = fetchRagContext(techContext.displayName)
+        val ragSection = buildRagPromptSection(ragContext)
+        if (ragContext.isNotBlank()) {
+            logger.info("RAG context found for {}, enhancing detailed curriculum prompt", techContext.displayName)
+        }
+        
         return context.ai()
             .withLlm(gpt41Mini)
             .withTools(CoreToolGroups.WEB)
@@ -931,6 +1103,7 @@ class NewTechLearningAgent(
                 
                 Study these curriculum examples for quality and structure reference:
                 $curriculumFewShotExamples
+                $ragSection
                 
                 Now generate a DETAILED learning curriculum for ${techContext.displayName}.
                 
