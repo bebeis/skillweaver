@@ -467,7 +467,8 @@ class NewTechLearningAgent(
         techContext: SimpleTechContext,
         curriculum: BasicCurriculum,
         gapAnalysis: NoGapAnalysis,
-        request: LearningRequest
+        request: LearningRequest,
+        context: OperationContext
     ): GeneratedLearningPlan {
         logger.info("Finalizing quick plan for member: {} / technology: {}", 
             profile.memberId, techContext.technologyKey)
@@ -491,6 +492,36 @@ class NewTechLearningAgent(
             }
         )
         
+        val stepsWithoutResources = curriculum.steps.map { step ->
+            GeneratedStep(
+                order = step.order,
+                title = step.title,
+                description = step.description,
+                estimatedHours = step.estimatedHours,
+                keyTopics = step.keyTopics,
+                resources = emptyList()
+            )
+        }
+        
+        val enrichedSteps = runParallelOrdered(
+            items = stepsWithoutResources,
+            block = { step ->
+                val resources = generateResourcesForStep(
+                    step = step,
+                    techName = techContext.displayName,
+                    prefersKorean = profile.learningPreference.preferKorean,
+                    learningStyle = profile.learningPreference.learningStyle,
+                    context = context,
+                    quickMode = true
+                )
+                step.copy(resources = resources)
+            },
+            onError = { step, ex ->
+                logger.warn("Resource generation failed for step {}: {}", step.title, ex.message)
+                step.copy(resources = emptyList())
+            }
+        )
+        
         return GeneratedLearningPlan(
             memberId = profile.memberId,
             targetTechnologyKey = request.targetTechnologyKey,
@@ -502,26 +533,17 @@ class NewTechLearningAgent(
             totalEstimatedHours = totalHours,
             startDate = startDate,
             targetEndDate = targetEndDate,
-                    steps = curriculum.steps.map { step ->
-                GeneratedStep(
-                    order = step.order,
-                    title = step.title,
-                    description = step.description,
-                    estimatedHours = step.estimatedHours,
-                    keyTopics = step.keyTopics,
-                    resources = emptyList()
-                )
-            },
+            steps = enrichedSteps,
             backgroundAnalysis = backgroundAnalysis,
             dailySchedule = dailySchedule,
             metadata = PlanMetadata(
                 generatedPath = com.bebeis.skillweaver.core.domain.learning.LearningPathType.QUICK,
                 llmModel = "GPT-4o-mini",
-                estimatedCost = 0.05,
-                generationTimeSeconds = 180,
+                estimatedCost = 0.08,
+                generationTimeSeconds = 240,
                 analysisDepth = "SIMPLE",
                 gapAnalysisPerformed = false,
-                resourcesEnriched = false
+                resourcesEnriched = true
             )
         )
     }
@@ -723,7 +745,7 @@ class NewTechLearningAgent(
                     is NoGapAnalysis -> gap
                     else -> NoGapAnalysis(skipped = false, reason = "gap converted from ${gap::class.simpleName}")
                 }
-                finalizeQuickPlan(profile, ctx, basic, gapForQuick, request)
+                finalizeQuickPlan(profile, ctx, basic, gapForQuick, request, context)
             }
             "detailed" -> {
                 val ctx = deepCtx ?: runCatching { deepAnalysis(profile, request, context) }.getOrNull()
@@ -760,7 +782,7 @@ class NewTechLearningAgent(
                     else -> quickGapCheck(profile, ctx, context)
                 }
                 val cur = generateStandardCurriculum(profile, ctx, quickGap, context)
-                finalizeStandardPlan(profile, ctx, cur, quickGap, request)
+                finalizeStandardPlan(profile, ctx, cur, quickGap, request, context)
             }
         }
 
@@ -978,7 +1000,8 @@ class NewTechLearningAgent(
         techContext: DeepTechContext,
         curriculum: StandardCurriculum,
         gapAnalysis: QuickGapAnalysis,
-        request: LearningRequest
+        request: LearningRequest,
+        context: OperationContext
     ): GeneratedLearningPlan {
         logger.info("Finalizing standard plan for member: {} / technology: {}", 
             profile.memberId, techContext.technologyKey)
@@ -1010,6 +1033,35 @@ class NewTechLearningAgent(
             append("Covers ${curriculum.steps.size} comprehensive steps over $estimatedWeeks weeks.")
         }
         
+        val stepsWithoutResources = curriculum.steps.map { step ->
+            GeneratedStep(
+                order = step.order,
+                title = step.title,
+                description = step.description,
+                estimatedHours = step.estimatedHours,
+                keyTopics = step.keyTopics,
+                resources = emptyList()
+            )
+        }
+        
+        val enrichedSteps = runParallelOrdered(
+            items = stepsWithoutResources,
+            block = { step ->
+                val resources = generateResourcesForStep(
+                    step = step,
+                    techName = techContext.displayName,
+                    prefersKorean = profile.learningPreference.preferKorean,
+                    learningStyle = profile.learningPreference.learningStyle,
+                    context = context
+                )
+                step.copy(resources = resources)
+            },
+            onError = { step, ex ->
+                logger.warn("Resource generation failed for step {}: {}", step.title, ex.message)
+                step.copy(resources = emptyList())
+            }
+        )
+        
         return GeneratedLearningPlan(
             memberId = profile.memberId,
             targetTechnologyKey = request.targetTechnologyKey,
@@ -1019,26 +1071,17 @@ class NewTechLearningAgent(
             totalEstimatedHours = totalHours,
             startDate = startDate,
             targetEndDate = targetEndDate,
-            steps = curriculum.steps.map { step ->
-                GeneratedStep(
-                    order = step.order,
-                    title = step.title,
-                    description = step.description,
-                    estimatedHours = step.estimatedHours,
-                    keyTopics = step.keyTopics,
-                    resources = emptyList()
-                )
-            },
+            steps = enrichedSteps,
             backgroundAnalysis = backgroundAnalysis,
             dailySchedule = dailySchedule,
             metadata = PlanMetadata(
                 generatedPath = com.bebeis.skillweaver.core.domain.learning.LearningPathType.STANDARD,
                 llmModel = "GPT-4o-mini",
-                estimatedCost = 0.15,
-                generationTimeSeconds = 480,
+                estimatedCost = 0.20,
+                generationTimeSeconds = 600,
                 analysisDepth = "MODERATE",
                 gapAnalysisPerformed = true,
-                resourcesEnriched = false
+                resourcesEnriched = true
             )
         )
     }
@@ -1477,34 +1520,46 @@ class NewTechLearningAgent(
         techName: String,
         prefersKorean: Boolean,
         learningStyle: LearningStyle,
-        context: OperationContext
+        context: OperationContext,
+        quickMode: Boolean = false
     ): List<LearningResource> {
         val preferredTypes = preferredResourceTypes(learningStyle)
+        val resourceCount = if (quickMode) "2" else "3-4"
+        
         return try {
-            context.ai()
-                .withLlm(gpt41Mini)
-                .withTools(
+            val aiBuilder = context.ai().withLlm(gpt41Mini)
+            
+            val aiWithTools = if (quickMode) {
+                aiBuilder.withTools(CoreToolGroups.WEB)
+            } else {
+                aiBuilder.withTools(
                     CoreToolGroups.WEB,
                     "github",
                     "youtube"
                 )
-                .create<List<LearningResource>>(
-                    prompt = """
-                    Find 3-4 learning resources for this step.
-                    
-                    Technology: $techName
-                    Step: ${step.title}
-                    Description: ${step.description}
-                    KeyTopics: ${step.keyTopics.joinToString(", ")}
-                    Language preference: ${if (prefersKorean) "Korean first, then English" else "English allowed, Korean if good"} 
-                    Preferred resource types (ordered): ${preferredTypes.joinToString(", ")} based on learning style: $learningStyle
-                    
-                    If learning style is VIDEO_FIRST, actively search Inflearn, Udemy, and YouTube first, then fall back to other sources.
-                    
-                    Return List<LearningResource> with type (DOC/VIDEO/BLOG/COURSE/REPO), title, url, language, description.
-                    Prioritize free, reputable sources. Respect preferred types first. Include at least one hands-on/repository or project-style resource if applicable.
-                    """.trimIndent()
-                )
+            }
+            
+            val videoSearchHint = if (!quickMode && learningStyle == LearningStyle.VIDEO_FIRST) {
+                "If learning style is VIDEO_FIRST, actively search Inflearn, Udemy, and YouTube first, then fall back to other sources."
+            } else ""
+            
+            aiWithTools.create<List<LearningResource>>(
+                prompt = """
+                Find $resourceCount learning resources for this step.
+                
+                Technology: $techName
+                Step: ${step.title}
+                Description: ${step.description}
+                KeyTopics: ${step.keyTopics.joinToString(", ")}
+                Language preference: ${if (prefersKorean) "Korean first, then English" else "English allowed, Korean if good"} 
+                Preferred resource types (ordered): ${preferredTypes.joinToString(", ")} based on learning style: $learningStyle
+                
+                $videoSearchHint
+                
+                Return List<LearningResource> with type (DOC/VIDEO/BLOG/COURSE/REPO), title, url, language, description.
+                Prioritize free, reputable sources. Respect preferred types first.
+                """.trimIndent()
+            )
         } catch (e: Exception) {
             logger.warn("Resource generation failed for step {}: {}", step.title, e.message)
             emptyList()

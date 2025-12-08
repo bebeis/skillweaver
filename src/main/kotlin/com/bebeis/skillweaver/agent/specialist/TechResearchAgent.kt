@@ -1,6 +1,7 @@
 package com.bebeis.skillweaver.agent.specialist
 
 import com.embabel.agent.api.annotation.Action
+import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
@@ -25,6 +26,7 @@ class TechResearchAgent {
     )
     
     @Action(toolGroups = [CoreToolGroups.WEB])
+    @AchievesGoal(description = "Research technology trends, versions, and industry adoption")
     fun researchTechnologyTrends(
         technology: String,
         context: OperationContext

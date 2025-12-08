@@ -3,6 +3,7 @@ package com.bebeis.skillweaver.agent.specialist
 import com.bebeis.skillweaver.core.domain.learning.ResourceType
 import com.bebeis.skillweaver.core.domain.member.ExperienceLevel
 import com.embabel.agent.api.annotation.Action
+import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Agent
 import com.embabel.agent.api.common.OperationContext
 import com.embabel.agent.api.common.create
@@ -27,6 +28,7 @@ class ResourceCuratorAgent {
     )
     
     @Action(toolGroups = [CoreToolGroups.WEB, "youtube", "github"])
+    @AchievesGoal(description = "Curate personalized learning resources for target technology")
     fun curateResources(
         request: ResourceCurationRequest,
         context: OperationContext
