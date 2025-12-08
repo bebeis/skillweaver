@@ -36,11 +36,14 @@ class TechGraphService(
             """, mapOf("tech" to technology))
             
             val required = requiredResult.list().map { record ->
+                val name = record["name"].asString()
                 TechNode(
-                    name = record["name"].asString(),
+                    name = name,
                     displayName = record["displayName"].asString(),
-                    category = TechCategory.valueOf(record["category"].asString()),
-                    difficulty = Difficulty.valueOf(record["difficulty"].asString())
+                    category = record["category"]?.takeIf { !it.isNull }?.let { TechCategory.valueOf(it.asString()) }
+                        ?: throw IllegalStateException("Technology '$name' is missing 'category' in Neo4j"),
+                    difficulty = record["difficulty"]?.takeIf { !it.isNull }?.let { Difficulty.valueOf(it.asString()) }
+                        ?: throw IllegalStateException("Technology '$name' is missing 'difficulty' in Neo4j")
                 )
             }
             
@@ -52,11 +55,14 @@ class TechGraphService(
             """, mapOf("tech" to technology))
             
             val recommended = recommendedResult.list().map { record ->
+                val name = record["name"].asString()
                 TechNode(
-                    name = record["name"].asString(),
+                    name = name,
                     displayName = record["displayName"].asString(),
-                    category = TechCategory.valueOf(record["category"].asString()),
-                    difficulty = Difficulty.valueOf(record["difficulty"].asString())
+                    category = record["category"]?.takeIf { !it.isNull }?.let { TechCategory.valueOf(it.asString()) }
+                        ?: throw IllegalStateException("Technology '$name' is missing 'category' in Neo4j"),
+                    difficulty = record["difficulty"]?.takeIf { !it.isNull }?.let { Difficulty.valueOf(it.asString()) }
+                        ?: throw IllegalStateException("Technology '$name' is missing 'difficulty' in Neo4j")
                 )
             }
             
@@ -122,11 +128,14 @@ class TechGraphService(
             """, mapOf("tech" to technology))
             
             return result.list().map { record ->
+                val name = record["name"].asString()
                 TechNode(
-                    name = record["name"].asString(),
+                    name = name,
                     displayName = record["displayName"].asString(),
-                    category = TechCategory.valueOf(record["category"].asString()),
-                    difficulty = Difficulty.valueOf(record["difficulty"].asString())
+                    category = record["category"]?.takeIf { !it.isNull }?.let { TechCategory.valueOf(it.asString()) }
+                        ?: throw IllegalStateException("Technology '$name' is missing 'category' in Neo4j"),
+                    difficulty = record["difficulty"]?.takeIf { !it.isNull }?.let { Difficulty.valueOf(it.asString()) }
+                        ?: throw IllegalStateException("Technology '$name' is missing 'difficulty' in Neo4j")
                 )
             }
         }
