@@ -7,6 +7,7 @@ import jakarta.persistence.ElementCollection
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -48,7 +49,7 @@ class Technology(
     @Column(name = "estimated_learning_hours")
     val estimatedLearningHours: Int? = null,
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
         name = "technology_prerequisites",
         joinColumns = [JoinColumn(name = "technology_id")]
@@ -56,7 +57,7 @@ class Technology(
     @Column(name = "prerequisite_key", length = 100)
     val prerequisites: List<String> = emptyList(),
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
         name = "technology_related",
         joinColumns = [JoinColumn(name = "technology_id")]
