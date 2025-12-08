@@ -28,6 +28,9 @@ class KnowledgeDocument(
     val source: String,
     
     @Column
+    val contentHash: String? = null,
+    
+    @Column
     val vectorId: String? = null,
     
     @Column(nullable = false)

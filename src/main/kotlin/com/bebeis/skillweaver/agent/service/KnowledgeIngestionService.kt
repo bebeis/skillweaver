@@ -2,19 +2,19 @@ package com.bebeis.skillweaver.agent.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.ai.document.Document
+import org.springframework.ai.embedding.EmbeddingModel
 import org.springframework.ai.vectorstore.VectorStore
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 /**
- * 지식 베이스에 문서를 임베딩하고 저장하는 서비스
- * 
- * VectorStore 빈이 존재할 때만 활성화됩니다.
+ * 지식 베이스 임베딩 서비스
  */
 @Service
-@ConditionalOnBean(VectorStore::class)
+@Profile("rag")
 class KnowledgeIngestionService(
-    private val vectorStore: VectorStore
+    private val vectorStore: VectorStore,
+    private val embeddingModel: EmbeddingModel
 ) {
     private val logger = LoggerFactory.getLogger(KnowledgeIngestionService::class.java)
     

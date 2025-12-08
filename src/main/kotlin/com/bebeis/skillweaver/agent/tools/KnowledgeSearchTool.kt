@@ -2,7 +2,7 @@ package com.bebeis.skillweaver.agent.tools
 
 import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.VectorStore
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 /**
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
  * VectorStore 빈이 존재할 때만 활성화됩니다.
  */
 @Component
-@ConditionalOnBean(VectorStore::class)
+@Profile("rag")
 class KnowledgeSearchTool(
     private val vectorStore: VectorStore
 ) {

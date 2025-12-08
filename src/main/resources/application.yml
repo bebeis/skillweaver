@@ -40,7 +40,13 @@ spring:
                 - "tavily-mcp@latest"
               env:
                 TAVILY_API_KEY: ${TAVILY_API_KEY:}
-
+    vectorstore:
+      qdrant:
+        host: ${QDRANT_CLOUD_ENDPOINT:localhost}
+        port: ${QDRANT_PORT:6334}
+        api-key: ${QDRANT_CLOUD_API_KEY:}
+        use-tls: ${QDRANT_USE_TLS:false}
+        collection-name: ${QDRANT_COLLECTION:skillweaver-knowledge}
 jwt:
   secret: ${JWT_SECRET:skillweaver-jwt-secret-key-for-development-only-change-in-production}
   access-token-validity: ${JWT_ACCESS_TOKEN_VALIDITY:3600000}

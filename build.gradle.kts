@@ -43,7 +43,7 @@ repositories {
 }
 
 val embabelAgentVersion = "0.3.0"
-val springAiVersion = "1.0.3" 
+val springAiVersion = "1.1.0" 
 
 dependencies {
     implementation("com.embabel.agent:embabel-agent-starter:${embabelAgentVersion}")
@@ -51,6 +51,7 @@ dependencies {
     
     implementation(platform("org.springframework.ai:spring-ai-bom:${springAiVersion}"))
     implementation("org.springframework.ai:spring-ai-starter-vector-store-qdrant")
+    implementation("org.springframework.ai:spring-ai-starter-model-openai")
     
     // V3 GraphRAG - Neo4j Driver
     implementation("org.neo4j.driver:neo4j-java-driver:5.26.0")
