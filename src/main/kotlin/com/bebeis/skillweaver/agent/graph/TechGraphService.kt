@@ -179,4 +179,18 @@ class TechGraphService(
             }
         }
     }
+
+    /**
+     * 특정 기술이 그래프에 존재하는지 확인합니다.
+     */
+    fun existsTechnology(technology: String): Boolean {
+        neo4jDriver.session().use { session ->
+            val result = session.run("""
+                MATCH (t:Technology {name: ${"$"}tech})
+                RETURN count(t) > 0 AS exists
+            """, mapOf("tech" to technology))
+            
+            return result.single()["exists"].asBoolean()
+        }
+    }
 }

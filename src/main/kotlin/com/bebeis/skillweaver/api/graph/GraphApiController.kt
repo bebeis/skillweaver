@@ -25,6 +25,12 @@ class GraphApiController(
      */
     @GetMapping("/roadmap/{technology}")
     fun getRoadmap(@PathVariable technology: String): ResponseEntity<ApiResponse<RoadmapResponse>> {
+        if (!techGraphService.existsTechnology(technology)) {
+            return ResponseEntity.status(404).body(
+                ApiResponse.error("TECHNOLOGY_NOT_FOUND", "Technology '$technology' not found in graph")
+            )
+        }
+        
         val prerequisites = techGraphService.findPrerequisites(technology)
         val nextSteps = techGraphService.findRelatedTechnologies(technology)
         
@@ -77,6 +83,12 @@ class GraphApiController(
      */
     @GetMapping("/recommendations/{technology}")
     fun getRecommendations(@PathVariable technology: String): ResponseEntity<ApiResponse<RecommendationsResponse>> {
+        if (!techGraphService.existsTechnology(technology)) {
+            return ResponseEntity.status(404).body(
+                ApiResponse.error("TECHNOLOGY_NOT_FOUND", "Technology '$technology' not found in graph")
+            )
+        }
+        
         val related = techGraphService.findRelatedTechnologies(technology)
         
         val response = RecommendationsResponse(
@@ -100,6 +112,12 @@ class GraphApiController(
      */
     @PostMapping("/gap-analysis")
     fun analyzeGap(@RequestBody request: GapAnalysisRequest): ResponseEntity<ApiResponse<GapAnalysisResponse>> {
+        if (!techGraphService.existsTechnology(request.targetTechnology)) {
+            return ResponseEntity.status(404).body(
+                ApiResponse.error("TECHNOLOGY_NOT_FOUND", "Target technology '${request.targetTechnology}' not found in graph")
+            )
+        }
+        
         val prerequisites = techGraphService.findPrerequisites(request.targetTechnology)
         val allRequired = prerequisites.required.map { it.name }.toSet()
         val known = request.knownTechnologies.toSet()
