@@ -28,12 +28,16 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import org.springframework.context.event.EventListener
+import com.bebeis.skillweaver.agent.event.AgentProgressEvent
 import java.io.IOException
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import com.bebeis.skillweaver.agent.event.ActiveAgentRunRegistry
 import kotlin.math.max
 
 @RestController
@@ -43,10 +47,21 @@ class AgentStreamController(
     private val learningPlanService: LearningPlanService,
     private val agentPlatform: AgentPlatform,
     private val objectMapper: ObjectMapper,
-    private val agentEventBroadcaster: AgentEventBroadcaster
+    private val agentEventBroadcaster: AgentEventBroadcaster,
+    private val activeAgentRunRegistry: ActiveAgentRunRegistry
 ) {
     private val logger = LoggerFactory.getLogger(AgentStreamController::class.java)
     private val executor = Executors.newCachedThreadPool()
+    
+    // processId -> (agentRunId, emitter, sequence) 매핑
+    private val processContextMap = ConcurrentHashMap<String, ProcessContext>()
+    
+    private data class ProcessContext(
+        val agentRunId: Long,
+        val emitter: SseEmitter,
+        val sequence: AtomicLong,
+        val emitterActive: AtomicBoolean
+    )
 
     @GetMapping(
         "/learning-plan/stream",
@@ -66,10 +81,6 @@ class AgentStreamController(
         val emitter = SseEmitter(30 * 60 * 1000L)
         val emitterActive = AtomicBoolean(true)
         val sequence = AtomicLong(0)
-        val learningRequest = LearningRequest(
-            memberId = memberId,
-            targetTechnologyKey = targetTechnology
-        )
         
         CompletableFuture.runAsync({
             var runId: Long? = null
@@ -84,6 +95,13 @@ class AgentStreamController(
                     )
                 )
                 runId = agentRun.agentRunId!!
+                
+                // LearningRequest를 runId 생성 후에 만들어서 agentRunId 포함
+                val learningRequest = LearningRequest(
+                    memberId = memberId,
+                    targetTechnologyKey = targetTechnology,
+                    agentRunId = runId
+                )
 
                 sendEvent(
                     emitter = emitter,
@@ -112,6 +130,16 @@ class AgentStreamController(
                     ),
                     learningRequest
                 )
+                
+                // processId 등록 - Agent에서 발행하는 이벤트를 수신하기 위함
+                val processId = agentProcess.toString()
+                processContextMap[processId] = ProcessContext(
+                    agentRunId = runId,
+                    emitter = emitter,
+                    sequence = sequence,
+                    emitterActive = emitterActive
+                )
+                logger.debug("Registered processId={} for agentRunId={}", processId, runId)
 
                 agentRunService.startRun(runId)
 
@@ -130,6 +158,9 @@ class AgentStreamController(
 
                 monitorProcessHistory(agentProcess, runId!!, emitter, emitterActive, sequence)
 
+                // Agent 실행 전 현재 스레드에 agentRunId 등록
+                activeAgentRunRegistry.register(runId)
+                
                 agentPlatform.start(agentProcess)
 
                 waitForProcessCompletion(agentProcess)
@@ -180,28 +211,88 @@ class AgentStreamController(
                     sequence = sequence.incrementAndGet(),
                     event = errorEvent
                 )
-                runId?.let {
+                runId?.let { 
                     agentRunService.failRun(it, e.message ?: "Agent execution failed")
                     agentEventBroadcaster.complete(it)
                 }
                 emitter.completeWithError(e)
+            } finally {
+                // Agent 실행 완료 후 스레드 등록 해제
+                activeAgentRunRegistry.unregister()
+                // processId 매핑 정리
+                processContextMap.entries.removeIf { it.value.agentRunId == runId }
             }
         }, executor)
 
         emitter.onCompletion {
             emitterActive.set(false)
             logger.info("SSE 연결 완료")
+            // 완료 시 매핑 정리
+            processContextMap.entries.removeIf { it.value.emitter == emitter }
         }
         emitter.onTimeout {
             emitterActive.set(false)
             logger.warn("SSE 연결 타임아웃")
+            processContextMap.entries.removeIf { it.value.emitter == emitter }
         }
         emitter.onError { e ->
             emitterActive.set(false)
             logger.error("SSE 연결 오류", e)
+            processContextMap.entries.removeIf { it.value.emitter == emitter }
         }
 
         return emitter
+    }
+    
+    /**
+     * Agent에서 발행한 진행률 이벤트를 SSE로 전송
+     * processId는 이제 agentRunId의 문자열 표현
+     */
+    @EventListener
+    fun handleAgentProgressEvent(event: AgentProgressEvent) {
+        val agentRunId = event.processId.toLongOrNull()
+        if (agentRunId == null) {
+            logger.debug("Invalid agentRunId in processId: {}", event.processId)
+            return
+        }
+        
+        // agentRunId로 context 조회
+        val context = processContextMap.values.firstOrNull { it.agentRunId == agentRunId }
+        if (context == null) {
+            logger.debug("No context found for agentRunId={}", agentRunId)
+            return
+        }
+        
+        handleProgressEvent(context, event)
+    }
+    
+    private fun handleProgressEvent(context: ProcessContext, event: AgentProgressEvent) {
+        if (!context.emitterActive.get()) return
+        
+        val progressMessage = buildString {
+            append(event.message)
+            event.detail?.let { append(" ($it)") }
+            event.progressPercent?.let { append(" - ${it}%") }
+        }
+        
+        try {
+            sendEvent(
+                emitter = context.emitter,
+                runId = context.agentRunId,
+                eventName = "agent_progress",
+                sequence = context.sequence.incrementAndGet(),
+                event = AgentEventDto(
+                    type = com.bebeis.skillweaver.core.domain.agent.SseEventType.PROGRESS,
+                    agentRunId = context.agentRunId,
+                    actionName = event.stage.name,
+                    message = progressMessage,
+                    timestamp = System.currentTimeMillis()
+                )
+            )
+            logger.debug("Sent progress event: stage={}, message={}", event.stage, progressMessage)
+        } catch (e: Exception) {
+            logger.warn("Failed to send progress event for runId={}: {}", context.agentRunId, e.message)
+        }
     }
 
     private fun monitorProcessHistory(

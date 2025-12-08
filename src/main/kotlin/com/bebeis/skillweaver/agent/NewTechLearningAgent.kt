@@ -48,6 +48,10 @@ import java.util.concurrent.Executors
 import com.bebeis.skillweaver.agent.specialist.ResourceCuratorAgent
 import com.bebeis.skillweaver.agent.specialist.ResourceCurationRequest
 import com.bebeis.skillweaver.agent.specialist.TechResearchAgent
+import com.bebeis.skillweaver.agent.event.AgentProgressEvent
+import com.bebeis.skillweaver.agent.event.ProgressStage
+import com.bebeis.skillweaver.agent.event.ActiveAgentRunRegistry
+import org.springframework.context.ApplicationEventPublisher
 import kotlin.math.max
 import kotlin.math.min
 
@@ -57,9 +61,11 @@ class NewTechLearningAgent(
     private val memberRepository: MemberRepository,
     private val technologyRepository: TechnologyRepository,
     private val memberSkillRepository: MemberSkillRepository,
+    private val eventPublisher: ApplicationEventPublisher,
     private val knowledgeSearchTool: KnowledgeSearchTool? = null,
     private val techResearchAgent: TechResearchAgent? = null,
-    private val resourceCuratorAgent: ResourceCuratorAgent? = null
+    private val resourceCuratorAgent: ResourceCuratorAgent? = null,
+    private val activeAgentRunRegistry: ActiveAgentRunRegistry? = null
 ) {
     
     private val logger = LoggerFactory.getLogger(NewTechLearningAgent::class.java)
@@ -172,6 +178,51 @@ class NewTechLearningAgent(
         5. Recommend specific preparation steps for HIGH/MEDIUM gaps
         6. Estimate realistic preparation time based on member's experience level
     """.trimIndent()
+    
+    /**
+     * 진행률 이벤트 발행 헬퍼
+     */
+    private fun publishProgress(
+        agentRunId: Long?,
+        stage: ProgressStage,
+        message: String,
+        detail: String? = null,
+        stepIndex: Int? = null,
+        totalSteps: Int? = null
+    ) {
+        if (agentRunId == null) return
+        
+        try {
+            val progressPercent = when (stage) {
+                ProgressStage.ANALYSIS_STARTED -> 10
+                ProgressStage.DEEP_ANALYSIS -> 20
+                ProgressStage.GAP_ANALYSIS -> 30
+                ProgressStage.CURRICULUM_GENERATION -> 50
+                ProgressStage.RESOURCE_ENRICHMENT -> 70
+                ProgressStage.RESOURCE_STEP_PROGRESS -> {
+                    if (stepIndex != null && totalSteps != null && totalSteps > 0) {
+                        70 + (stepIndex * 25 / totalSteps)
+                    } else 75
+                }
+                ProgressStage.FINALIZING -> 95
+            }
+            
+            eventPublisher.publishEvent(
+                AgentProgressEvent(
+                    processId = agentRunId.toString(),
+                    stage = stage,
+                    message = message,
+                    detail = detail,
+                    progressPercent = progressPercent,
+                    stepIndex = stepIndex,
+                    totalSteps = totalSteps
+                )
+            )
+            logger.debug("Published progress event: agentRunId={}, stage={}, message={}", agentRunId, stage, message)
+        } catch (e: Exception) {
+            logger.warn("Failed to publish progress event: {}", e.message)
+        }
+    }
     
     /**
      * RAG 지식 검색을 통해 커리큘럼 생성에 필요한 컨텍스트를 수집합니다.
@@ -696,22 +747,33 @@ class NewTechLearningAgent(
         context: OperationContext
     ): GeneratedLearningPlan {
         val tech = resolveTechnologyDescriptor(request.targetTechnologyKey)
+        
+        // DEBUG: request.agentRunId 값 확인
+        logger.info("buildAdaptivePlan started: request.agentRunId={}, eventPublisher={}", 
+            request.agentRunId, if (eventPublisher != null) "available" else "NULL")
 
         val analysisMode = depthPlan.analysisMode.lowercase(Locale.getDefault())
         val gapMode = depthPlan.gapMode.lowercase(Locale.getDefault())
         val curriculumMode = depthPlan.curriculumMode.lowercase(Locale.getDefault())
         val resourceMode = depthPlan.resourceMode.lowercase(Locale.getDefault())
 
+        publishProgress(request.agentRunId, ProgressStage.ANALYSIS_STARTED, "${tech.displayName} 기술 분석 시작", "분석 모드: $analysisMode")
+
         val simpleCtx = when (analysisMode) {
             "quick" -> runCatching { quickAnalysis(profile, request, context) }.getOrNull()
             "skip" -> null
             else -> runCatching { quickAnalysis(profile, request, context) }.getOrNull()
         }
+        
+        publishProgress(request.agentRunId, ProgressStage.DEEP_ANALYSIS, "심층 분석 진행 중", "Gap 분석 모드: $gapMode")
+        
         val deepCtx = when (analysisMode) {
             "detailed", "standard" -> runCatching { deepAnalysis(profile, request, context) }.getOrNull()
             "quick" -> null
             else -> runCatching { deepAnalysis(profile, request, context) }.getOrNull()
         }
+
+        publishProgress(request.agentRunId, ProgressStage.GAP_ANALYSIS, "역량 Gap 분석 중", "현재 스킬 수: ${profile.currentSkillCount}")
 
         val gap = when (gapMode) {
             "quick" -> {
@@ -736,6 +798,8 @@ class NewTechLearningAgent(
             }
         }
 
+        publishProgress(request.agentRunId, ProgressStage.CURRICULUM_GENERATION, "커리큘럼 생성 중", "모드: $curriculumMode")
+
         val plan = when (curriculumMode) {
             "quick" -> {
                 val ctx = simpleCtx ?: runCatching { quickAnalysis(profile, request, context) }.getOrNull()
@@ -745,6 +809,7 @@ class NewTechLearningAgent(
                     is NoGapAnalysis -> gap
                     else -> NoGapAnalysis(skipped = false, reason = "gap converted from ${gap::class.simpleName}")
                 }
+                publishProgress(request.agentRunId, ProgressStage.RESOURCE_ENRICHMENT, "학습 자료 수집 시작", "Quick 모드")
                 finalizeQuickPlan(profile, ctx, basic, gapForQuick, request, context)
             }
             "detailed" -> {
@@ -757,6 +822,7 @@ class NewTechLearningAgent(
                     else -> detailedGapAnalysis(profile, ctx, context)
                 }
                 val cur = generateDetailedCurriculum(profile, ctx, detailedGap, context)
+                publishProgress(request.agentRunId, ProgressStage.RESOURCE_ENRICHMENT, "학습 자료 수집 시작", "Detailed 모드, ${cur.steps.size}개 스텝")
                 val enriched = if (resourceMode != "skip") {
                     enrichWithResources(cur, ctx, profile, context)
                 } else EnrichedCurriculum(
@@ -782,9 +848,12 @@ class NewTechLearningAgent(
                     else -> quickGapCheck(profile, ctx, context)
                 }
                 val cur = generateStandardCurriculum(profile, ctx, quickGap, context)
+                publishProgress(request.agentRunId, ProgressStage.RESOURCE_ENRICHMENT, "학습 자료 수집 시작", "Standard 모드, ${cur.steps.size}개 스텝")
                 finalizeStandardPlan(profile, ctx, cur, quickGap, request, context)
             }
         }
+
+        publishProgress(request.agentRunId, ProgressStage.FINALIZING, "학습 플랜 최종화 중", "총 ${plan.steps.size}개 스텝")
 
         if (depthPlan.allowHybrid || depthPlan.hybridMix.isNotEmpty()) {
             val mix = if (depthPlan.hybridMix.isNotEmpty()) depthPlan.hybridMix else chooseHybridMix(profile, tech.displayName, context)
