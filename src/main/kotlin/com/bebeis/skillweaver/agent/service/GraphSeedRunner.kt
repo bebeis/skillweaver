@@ -51,34 +51,81 @@ class GraphSeedRunner(
         
         var nodesCreated = 0
         var edgesCreated = 0
+        var skippedRelations = 0
+        
+        // Phase 1: 모든 기술 노드 먼저 생성
+        val availableTechnologies = mutableSetOf<String>()
         
         neo4jDriver.session().use { session ->
-            // 각 시드 파일에서 노드와 관계 생성
+            // 모든 시드 파일에서 노드 생성
             for (resource in resources) {
                 try {
                     val content = resource.inputStream.bufferedReader().readText()
                     val seedData: Map<String, Any> = objectMapper.readValue(content)
                     
                     val techName = seedData["technology"] as? String ?: continue
+                    availableTechnologies.add(techName)
+                    
                     val displayName = seedData["displayName"] as? String ?: techName
                     val category = (seedData["category"] as? String) ?: "CONCEPT"
                     val difficulty = (seedData["difficulty"] as? String) ?: "INTERMEDIATE"
                     
-                    // 노드 생성 (MERGE로 중복 방지)
+                    // V4: 확장 속성 추출
+                    val ecosystem = seedData["ecosystem"] as? String
+                    val officialSite = seedData["officialSite"] as? String
+                    val active = seedData["active"] as? Boolean ?: true
+                    val estimatedLearningHours = (seedData["estimatedLearningHours"] as? Number)?.toInt()
+                    val communityPopularity = (seedData["communityPopularity"] as? Number)?.toInt()
+                    val jobMarketDemand = (seedData["jobMarketDemand"] as? Number)?.toInt()
+                    val learningTips = seedData["learningTips"] as? String
+                    @Suppress("UNCHECKED_CAST")
+                    val useCases = seedData["useCases"] as? List<String> ?: emptyList()
+                    
+                    // 노드 생성 (MERGE로 중복 방지) - V4: 모든 확장 속성 포함
                     session.run("""
                         MERGE (t:Technology {name: ${"$"}name})
                         SET t.displayName = ${"$"}displayName,
                             t.category = ${"$"}category,
-                            t.difficulty = ${"$"}difficulty
+                            t.difficulty = ${"$"}difficulty,
+                            t.ecosystem = ${"$"}ecosystem,
+                            t.officialSite = ${"$"}officialSite,
+                            t.active = ${"$"}active,
+                            t.estimatedLearningHours = ${"$"}estimatedLearningHours,
+                            t.communityPopularity = ${"$"}communityPopularity,
+                            t.jobMarketDemand = ${"$"}jobMarketDemand,
+                            t.learningTips = ${"$"}learningTips,
+                            t.useCases = ${"$"}useCases
                     """, mapOf(
                         "name" to techName,
                         "displayName" to displayName,
                         "category" to category,
-                        "difficulty" to difficulty
+                        "difficulty" to difficulty,
+                        "ecosystem" to ecosystem,
+                        "officialSite" to officialSite,
+                        "active" to active,
+                        "estimatedLearningHours" to estimatedLearningHours,
+                        "communityPopularity" to communityPopularity,
+                        "jobMarketDemand" to jobMarketDemand,
+                        "learningTips" to learningTips,
+                        "useCases" to useCases
                     ))
                     nodesCreated++
                     
-                    // 관계 생성 (relations 필드가 있는 경우)
+                } catch (e: Exception) {
+                    log.warn("Failed to load node from ${resource.filename}: ${e.message}")
+                }
+            }
+            
+            log.info("Created $nodesCreated technology nodes")
+            
+            // Phase 2: 관계 생성 (노드가 존재하는 경우만)
+            for (resource in resources) {
+                try {
+                    val content = resource.inputStream.bufferedReader().readText()
+                    val seedData: Map<String, Any> = objectMapper.readValue(content)
+                    
+                    val techName = seedData["technology"] as? String ?: continue
+                    
                     @Suppress("UNCHECKED_CAST")
                     val relations = seedData["relations"] as? List<Map<String, String>> ?: emptyList()
                     
@@ -86,11 +133,12 @@ class GraphSeedRunner(
                         val toTech = rel["to"] ?: continue
                         val relType = rel["type"] ?: "DEPENDS_ON"
                         
-                        // 대상 노드가 없으면 생성
-                        session.run("""
-                            MERGE (to:Technology {name: ${"$"}toName})
-                            ON CREATE SET to.displayName = ${"$"}toName
-                        """, mapOf("toName" to toTech))
+                        // 대상 기술이 시드 데이터에 존재하는지 검증
+                        if (!availableTechnologies.contains(toTech)) {
+                            log.warn("Skipping relation $techName -> $toTech: target technology has no seed file")
+                            skippedRelations++
+                            continue
+                        }
                         
                         // 관계 생성
                         session.run("""
@@ -107,12 +155,15 @@ class GraphSeedRunner(
                     log.debug("Loaded: $techName with ${relations.size} relations")
                     
                 } catch (e: Exception) {
-                    log.warn("Failed to load graph seed from ${resource.filename}: ${e.message}")
+                    log.warn("Failed to load relations from ${resource.filename}: ${e.message}")
                 }
             }
         }
         
         log.info("✅ Graph seed completed: $nodesCreated nodes, $edgesCreated edges")
+        if (skippedRelations > 0) {
+            log.warn("⚠️  Skipped $skippedRelations relations due to missing target technologies")
+        }
     }
     
     /**

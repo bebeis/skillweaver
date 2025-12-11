@@ -7,10 +7,6 @@
         {
             "to": "cs-os",
             "type": "RELATED_TO"
-        },
-        {
-            "to": "http",
-            "type": "CONTAINS"
         }
     ],
     "documents": [

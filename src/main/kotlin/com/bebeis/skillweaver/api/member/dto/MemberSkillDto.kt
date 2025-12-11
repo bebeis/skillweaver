@@ -10,9 +10,7 @@ import java.time.LocalDateTime
  */
 data class MemberSkillResponse(
     val memberSkillId: Long,
-    val technologyId: Long?,
-    val technologyKey: String?,
-    val displayName: String?,
+    val technologyName: String?,      // V4: Neo4j Technology name
     val customName: String?,
     val level: SkillLevel,
     val yearsOfUse: Double,
@@ -22,12 +20,9 @@ data class MemberSkillResponse(
 ) {
     companion object {
         fun from(memberSkill: MemberSkill): MemberSkillResponse {
-            val technology = memberSkill.technology
             return MemberSkillResponse(
                 memberSkillId = memberSkill.memberSkillId!!,
-                technologyId = memberSkill.technologyId,
-                technologyKey = technology?.key,
-                displayName = technology?.displayName,
+                technologyName = memberSkill.technologyName,
                 customName = memberSkill.customName,
                 level = memberSkill.level,
                 yearsOfUse = memberSkill.yearsOfUse,
@@ -48,7 +43,7 @@ data class MemberSkillListResponse(
  * 회원 스킬 추가 요청 DTO
  */
 data class AddMemberSkillRequest(
-    val technologyId: Long?,
+    val technologyName: String?,      // V4: Neo4j Technology name (예: "spring-boot")
     val customName: String?,
     val level: SkillLevel,
     val yearsOfUse: Double = 0.0,
@@ -56,8 +51,8 @@ data class AddMemberSkillRequest(
     val note: String? = null
 ) {
     init {
-        require(technologyId != null || !customName.isNullOrBlank()) {
-            "technologyId 또는 customName 중 하나는 반드시 제공되어야 합니다."
+        require(!technologyName.isNullOrBlank() || !customName.isNullOrBlank()) {
+            "technologyName 또는 customName 중 하나는 반드시 제공되어야 합니다."
         }
     }
 }

@@ -193,4 +193,268 @@ class TechGraphService(
             return result.single()["exists"].asBoolean()
         }
     }
+    
+    // =====================================================================
+    // V4 CRUD 메서드
+    // =====================================================================
+    
+    /**
+     * 기술을 이름으로 조회합니다.
+     */
+    fun findByName(name: String): TechNode? {
+        log.debug("Finding technology by name: $name")
+        
+        neo4jDriver.session().use { session ->
+            val result = session.run("""
+                MATCH (t:Technology {name: ${"$"}name})
+                RETURN t
+            """, mapOf("name" to name))
+            
+            if (!result.hasNext()) {
+                return null
+            }
+            
+            val node = result.single()["t"].asNode()
+            return nodeToTechNode(node)
+        }
+    }
+    
+    /**
+     * 기술 목록을 필터와 함께 조회합니다.
+     */
+    fun findAll(
+        category: TechCategory? = null,
+        active: Boolean? = null,
+        search: String? = null,
+        limit: Int = 100
+    ): List<TechNode> {
+        log.debug("Finding all technologies with filters - category: $category, active: $active, search: $search")
+        
+        neo4jDriver.session().use { session ->
+            val conditions = mutableListOf<String>()
+            val params = mutableMapOf<String, Any>()
+            
+            category?.let {
+                conditions.add("t.category = \$category")
+                params["category"] = it.name
+            }
+            active?.let {
+                conditions.add("t.active = \$active")
+                params["active"] = it
+            }
+            search?.let {
+                conditions.add("(toLower(t.name) CONTAINS toLower(\$search) OR toLower(t.displayName) CONTAINS toLower(\$search))")
+                params["search"] = it
+            }
+            
+            val whereClause = if (conditions.isNotEmpty()) "WHERE ${conditions.joinToString(" AND ")}" else ""
+            params["limit"] = limit
+            
+            val result = session.run("""
+                MATCH (t:Technology)
+                $whereClause
+                RETURN t
+                ORDER BY t.displayName
+                LIMIT ${"$"}limit
+            """, params)
+            
+            return result.list().map { record ->
+                nodeToTechNode(record["t"].asNode())
+            }
+        }
+    }
+    
+    /**
+     * 새로운 기술을 생성합니다.
+     */
+    fun createTechnology(tech: TechNode): TechNode {
+        log.info("Creating technology: ${tech.name}")
+        
+        neo4jDriver.session().use { session ->
+            session.run("""
+                CREATE (t:Technology {
+                    name: ${"$"}name,
+                    displayName: ${"$"}displayName,
+                    category: ${"$"}category,
+                    difficulty: ${"$"}difficulty,
+                    ecosystem: ${"$"}ecosystem,
+                    officialSite: ${"$"}officialSite,
+                    active: ${"$"}active,
+                    learningRoadmap: ${"$"}learningRoadmap,
+                    estimatedLearningHours: ${"$"}estimatedLearningHours,
+                    communityPopularity: ${"$"}communityPopularity,
+                    jobMarketDemand: ${"$"}jobMarketDemand,
+                    description: ${"$"}description,
+                    learningTips: ${"$"}learningTips,
+                    useCases: ${"$"}useCases
+                })
+            """, techNodeToParams(tech))
+        }
+        
+        return tech
+    }
+    
+    /**
+     * 기존 기술을 업데이트합니다.
+     */
+    fun updateTechnology(name: String, update: TechNodeUpdate): TechNode? {
+        log.info("Updating technology: $name")
+        
+        neo4jDriver.session().use { session ->
+            val setStatements = mutableListOf<String>()
+            val params = mutableMapOf<String, Any>("name" to name)
+            
+            update.displayName?.let { setStatements.add("t.displayName = \$displayName"); params["displayName"] = it }
+            update.category?.let { setStatements.add("t.category = \$category"); params["category"] = it.name }
+            update.difficulty?.let { setStatements.add("t.difficulty = \$difficulty"); params["difficulty"] = it.name }
+            update.ecosystem?.let { setStatements.add("t.ecosystem = \$ecosystem"); params["ecosystem"] = it }
+            update.officialSite?.let { setStatements.add("t.officialSite = \$officialSite"); params["officialSite"] = it }
+            update.active?.let { setStatements.add("t.active = \$active"); params["active"] = it }
+            update.learningRoadmap?.let { setStatements.add("t.learningRoadmap = \$learningRoadmap"); params["learningRoadmap"] = it }
+            update.estimatedLearningHours?.let { setStatements.add("t.estimatedLearningHours = \$estimatedLearningHours"); params["estimatedLearningHours"] = it }
+            update.communityPopularity?.let { setStatements.add("t.communityPopularity = \$communityPopularity"); params["communityPopularity"] = it }
+            update.jobMarketDemand?.let { setStatements.add("t.jobMarketDemand = \$jobMarketDemand"); params["jobMarketDemand"] = it }
+            update.description?.let { setStatements.add("t.description = \$description"); params["description"] = it }
+            update.learningTips?.let { setStatements.add("t.learningTips = \$learningTips"); params["learningTips"] = it }
+            update.useCases?.let { setStatements.add("t.useCases = \$useCases"); params["useCases"] = it }
+            
+            if (setStatements.isEmpty()) {
+                return findByName(name)
+            }
+            
+            session.run("""
+                MATCH (t:Technology {name: ${"$"}name})
+                SET ${setStatements.joinToString(", ")}
+                RETURN t
+            """, params)
+        }
+        
+        return findByName(name)
+    }
+    
+    /**
+     * 기술을 삭제합니다.
+     */
+    fun deleteTechnology(name: String): Boolean {
+        log.info("Deleting technology: $name")
+        
+        neo4jDriver.session().use { session ->
+            val result = session.run("""
+                MATCH (t:Technology {name: ${"$"}name})
+                DETACH DELETE t
+                RETURN count(t) AS deleted
+            """, mapOf("name" to name))
+            
+            return result.single()["deleted"].asLong() > 0
+        }
+    }
+    
+    /**
+     * 특정 기술의 관계를 조회합니다.
+     */
+    fun findRelationships(from: String, relationType: TechRelation? = null): List<TechEdge> {
+        log.debug("Finding relationships from: $from, type: $relationType")
+        
+        neo4jDriver.session().use { session ->
+            val relationPattern = relationType?.let { "[:${it.name}]" } ?: "[r]"
+            
+            val result = session.run("""
+                MATCH (from:Technology {name: ${"$"}from})-$relationPattern->(to:Technology)
+                RETURN from.name AS fromName, to.name AS toName, type(r) AS relType,
+                       COALESCE(r.weight, 1.0) AS weight
+            """, mapOf("from" to from))
+            
+            return result.list().map { record ->
+                TechEdge(
+                    from = record["fromName"].asString(),
+                    to = record["toName"].asString(),
+                    relation = TechRelation.valueOf(record["relType"].asString()),
+                    weight = record["weight"].asDouble()
+                )
+            }
+        }
+    }
+    
+    /**
+     * 관계를 생성합니다.
+     */
+    fun createRelationship(edge: TechEdge): TechEdge {
+        log.info("Creating relationship: ${edge.from} -[${edge.relation}]-> ${edge.to}")
+        
+        neo4jDriver.session().use { session ->
+            session.run("""
+                MATCH (from:Technology {name: ${"$"}from})
+                MATCH (to:Technology {name: ${"$"}to})
+                MERGE (from)-[r:${edge.relation.name}]->(to)
+                SET r.weight = ${"$"}weight
+            """, mapOf(
+                "from" to edge.from,
+                "to" to edge.to,
+                "weight" to edge.weight
+            ))
+        }
+        
+        return edge
+    }
+    
+    /**
+     * 관계를 삭제합니다.
+     */
+    fun deleteRelationship(from: String, to: String, relationType: TechRelation): Boolean {
+        log.info("Deleting relationship: $from -[$relationType]-> $to")
+        
+        neo4jDriver.session().use { session ->
+            session.run("""
+                MATCH (from:Technology {name: ${"$"}from})-[r:${relationType.name}]->(to:Technology {name: ${"$"}to})
+                DELETE r
+            """, mapOf("from" to from, "to" to to))
+            
+            return true
+        }
+    }
+    
+    // =====================================================================
+    // Private Helper Methods
+    // =====================================================================
+    
+    private fun nodeToTechNode(node: org.neo4j.driver.types.Node): TechNode {
+        return TechNode(
+            name = node["name"].asString(),
+            displayName = node["displayName"].asString(),
+            category = node["category"]?.takeIf { !it.isNull }?.let { TechCategory.valueOf(it.asString()) }
+                ?: throw IllegalStateException("Technology '${node["name"].asString()}' is missing 'category' in Neo4j"),
+            difficulty = node["difficulty"]?.takeIf { !it.isNull }?.let { Difficulty.valueOf(it.asString()) } 
+                ?: Difficulty.INTERMEDIATE,
+            ecosystem = node["ecosystem"]?.takeIf { !it.isNull }?.asString(),
+            officialSite = node["officialSite"]?.takeIf { !it.isNull }?.asString(),
+            active = node["active"]?.takeIf { !it.isNull }?.asBoolean() ?: true,
+            learningRoadmap = node["learningRoadmap"]?.takeIf { !it.isNull }?.asString(),
+            estimatedLearningHours = node["estimatedLearningHours"]?.takeIf { !it.isNull }?.asInt(),
+            communityPopularity = node["communityPopularity"]?.takeIf { !it.isNull }?.asInt(),
+            jobMarketDemand = node["jobMarketDemand"]?.takeIf { !it.isNull }?.asInt(),
+            description = node["description"]?.takeIf { !it.isNull }?.asString(),
+            learningTips = node["learningTips"]?.takeIf { !it.isNull }?.asString(),
+            useCases = node["useCases"]?.takeIf { !it.isNull }?.asList { it.asString() } ?: emptyList()
+        )
+    }
+    
+    private fun techNodeToParams(tech: TechNode): Map<String, Any?> {
+        return mapOf(
+            "name" to tech.name,
+            "displayName" to tech.displayName,
+            "category" to tech.category.name,
+            "difficulty" to tech.difficulty.name,
+            "ecosystem" to tech.ecosystem,
+            "officialSite" to tech.officialSite,
+            "active" to tech.active,
+            "learningRoadmap" to tech.learningRoadmap,
+            "estimatedLearningHours" to tech.estimatedLearningHours,
+            "communityPopularity" to tech.communityPopularity,
+            "jobMarketDemand" to tech.jobMarketDemand,
+            "description" to tech.description,
+            "learningTips" to tech.learningTips,
+            "useCases" to tech.useCases
+        )
+    }
 }
+

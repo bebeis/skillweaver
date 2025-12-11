@@ -7,10 +7,6 @@
         {
             "to": "cs-architecture",
             "type": "RELATED_TO"
-        },
-        {
-            "to": "linux",
-            "type": "CONTAINS"
         }
     ],
     "documents": [

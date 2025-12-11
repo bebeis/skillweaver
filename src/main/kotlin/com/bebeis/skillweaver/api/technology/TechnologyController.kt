@@ -1,5 +1,6 @@
 package com.bebeis.skillweaver.api.technology
 
+import com.bebeis.skillweaver.agent.graph.TechGraphService
 import com.bebeis.skillweaver.api.common.ApiResponse
 import com.bebeis.skillweaver.api.technology.dto.CreateTechnologyRequest
 import com.bebeis.skillweaver.api.technology.dto.TechnologyDetailResponse
@@ -8,11 +9,19 @@ import com.bebeis.skillweaver.api.technology.dto.UpdateTechnologyRequest
 import com.bebeis.skillweaver.core.domain.technology.TechnologyCategory
 import com.bebeis.skillweaver.core.service.technology.TechnologyService
 import jakarta.validation.Valid
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
+/**
+ * Legacy Technology Controller (PostgreSQL-based)
+ * 
+ * This controller is only active when TechGraphService (Neo4j) is NOT available.
+ * When Neo4j is configured, TechnologyGraphController takes over.
+ */
 @RestController
 @RequestMapping("/api/v1/technologies")
+@ConditionalOnMissingBean(TechGraphService::class)
 class TechnologyController(
     private val technologyService: TechnologyService
 ) {

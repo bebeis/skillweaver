@@ -7,7 +7,6 @@ import com.bebeis.skillweaver.api.member.dto.MemberSkillListResponse
 import com.bebeis.skillweaver.api.member.dto.MemberSkillResponse
 import com.bebeis.skillweaver.api.member.dto.UpdateMemberSkillRequest
 import com.bebeis.skillweaver.core.domain.member.skill.SkillLevel
-import com.bebeis.skillweaver.core.domain.technology.TechnologyCategory
 import com.bebeis.skillweaver.core.service.member.MemberSkillService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -37,19 +36,15 @@ class MemberSkillController(
     fun getMemberSkills(
         @AuthUser authMemberId: Long,
         @PathVariable memberId: Long,
-        @RequestParam(required = false) category: String?,
         @RequestParam(required = false) level: String?
     ): ResponseEntity<ApiResponse<MemberSkillListResponse>> {
         require(authMemberId == memberId) { "본인의 기술 스택만 조회할 수 있습니다" }
-        // "undefined" 문자열을 null로 처리
-        val categoryEnum = category?.takeIf { it != "undefined" }?.let { 
-            try { TechnologyCategory.valueOf(it) } catch (e: IllegalArgumentException) { null }
-        }
+        
         val levelEnum = level?.takeIf { it != "undefined" }?.let { 
             try { SkillLevel.valueOf(it) } catch (e: IllegalArgumentException) { null }
         }
         
-        val skills = memberSkillService.getMemberSkills(memberId, categoryEnum, levelEnum)
+        val skills = memberSkillService.getMemberSkills(memberId, levelEnum)
         val response = MemberSkillListResponse(skills = skills, totalCount = skills.size)
         return ResponseEntity.ok(ApiResponse.success(response))
     }

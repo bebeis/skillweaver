@@ -1,18 +1,14 @@
 package com.bebeis.skillweaver.core.domain.member.skill
 
 import com.bebeis.skillweaver.core.domain.BaseEntity
-import com.bebeis.skillweaver.core.domain.technology.Technology
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
 import jakarta.persistence.Lob
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.time.LocalDate
 
@@ -27,13 +23,16 @@ class MemberSkill(
     @Column(name = "member_id", nullable = false)
     val memberId: Long,
 
-    @Column(name = "technology_id")
-    val technologyId: Long? = null,
+    /**
+     * Neo4j Technology의 name 참조 (V4)
+     * 정규화된 기술을 참조할 때 사용 (예: "spring-boot", "java")
+     */
+    @Column(name = "technology_name", length = 100)
+    val technologyName: String? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "technology_id", insertable = false, updatable = false)
-    val technology: Technology? = null,
-
+    /**
+     * 커스텀 기술명 (Neo4j에 없는 기술)
+     */
     @Column(name = "custom_name", length = 100)
     val customName: String? = null,
 
@@ -52,8 +51,8 @@ class MemberSkill(
     val note: String? = null
 ) : BaseEntity() {
     init {
-        require(technologyId != null || !customName.isNullOrBlank()) {
-            "technologyId 또는 customName 중 하나는 반드시 제공되어야 합니다."
+        require(!technologyName.isNullOrBlank() || !customName.isNullOrBlank()) {
+            "technologyName 또는 customName 중 하나는 반드시 제공되어야 합니다."
         }
         require(yearsOfUse >= 0) {
             "yearsOfUse는 0 이상이어야 합니다."
@@ -61,10 +60,17 @@ class MemberSkill(
     }
 
     /**
-     * 기술명을 반환 (Technology 참조 또는 customName)
+     * 기술명을 반환 (technologyName 또는 customName)
      */
     fun getSkillName(): String {
-        return customName ?: technology?.displayName ?: "Technology#$technologyId"
+        return technologyName ?: customName ?: "Unknown"
+    }
+
+    /**
+     * 정규화된 기술 여부 (Neo4j에 존재하는 기술인지)
+     */
+    fun isStandardTechnology(): Boolean {
+        return !technologyName.isNullOrBlank()
     }
 
     override fun equals(other: Any?): Boolean {
@@ -81,6 +87,6 @@ class MemberSkill(
     }
 
     override fun toString(): String {
-        return "MemberSkill(memberSkillId=$memberSkillId, memberId=$memberId, technologyId=$technologyId, customName=$customName, level=$level)"
+        return "MemberSkill(memberSkillId=$memberSkillId, memberId=$memberId, technologyName=$technologyName, customName=$customName, level=$level)"
     }
 }

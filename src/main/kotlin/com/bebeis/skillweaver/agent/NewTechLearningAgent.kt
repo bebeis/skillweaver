@@ -947,8 +947,7 @@ class NewTechLearningAgent(
         
         val currentSkills = memberSkillRepository.findByMemberId(profile.memberId)
         val skillNames = currentSkills.mapNotNull { skill ->
-            skill.technologyId?.let { technologyRepository.findById(it).orElse(null)?.key }
-                ?: skill.customName
+            skill.technologyName ?: skill.customName
         }.joinToString(", ")
         
         return context.ai()
@@ -1165,8 +1164,8 @@ class NewTechLearningAgent(
         
         val currentSkills = memberSkillRepository.findByMemberId(profile.memberId)
         val skillDetails = currentSkills.mapNotNull { skill ->
-            val techName = skill.technologyId?.let { 
-                technologyRepository.findById(it).orElse(null)?.displayName 
+            val techName = skill.technologyName?.let { name ->
+                technologyRepository.findByKey(name)?.displayName
             } ?: skill.customName
             techName?.let { "$it (${skill.level.name}, ${skill.yearsOfUse} years)" }
         }.joinToString("\n- ")
@@ -1774,8 +1773,8 @@ class NewTechLearningAgent(
 
     private fun loadSkillNames(memberId: Long): List<String> {
         return memberSkillRepository.findByMemberId(memberId).mapNotNull { skill ->
-            skill.technologyId?.let { techId ->
-                technologyRepository.findById(techId).orElse(null)?.displayName
+            skill.technologyName?.let { name ->
+                technologyRepository.findByKey(name)?.displayName
             } ?: skill.customName
         }.filter { it.isNotBlank() }
             .map { it.trim() }

@@ -8,10 +8,8 @@ import com.bebeis.skillweaver.api.member.dto.MemberSkillResponse
 import com.bebeis.skillweaver.api.member.dto.UpdateMemberSkillRequest
 import com.bebeis.skillweaver.core.domain.member.skill.MemberSkill
 import com.bebeis.skillweaver.core.domain.member.skill.SkillLevel
-import com.bebeis.skillweaver.core.domain.technology.TechnologyCategory
 import com.bebeis.skillweaver.core.storage.member.MemberRepository
 import com.bebeis.skillweaver.core.storage.member.MemberSkillRepository
-import com.bebeis.skillweaver.core.storage.technology.TechnologyRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,8 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class MemberSkillService(
     private val memberSkillRepository: MemberSkillRepository,
-    private val memberRepository: MemberRepository,
-    private val technologyRepository: TechnologyRepository
+    private val memberRepository: MemberRepository
 ) {
     private val logger = LoggerFactory.getLogger(MemberSkillService::class.java)
 
@@ -32,26 +29,16 @@ class MemberSkillService(
             notFound(ErrorCode.MEMBER_NOT_FOUND)
         }
 
-        // 기술이 지정된 경우 존재 확인
-        request.technologyId?.let { techId ->
-            if (!technologyRepository.existsById(techId)) {
-                notFound(ErrorCode.TECHNOLOGY_NOT_FOUND)
-            }
-
-            // 이미 등록된 스킬인지 확인
-            memberSkillRepository.findByMemberIdAndTechnologyId(memberId, techId)?.let {
+        // 정규화된 기술이 이미 등록된 경우 확인
+        request.technologyName?.let { techName ->
+            memberSkillRepository.findByMemberIdAndTechnologyName(memberId, techName)?.let {
                 conflict(ErrorCode.MEMBER_SKILL_ALREADY_EXISTS.message)
             }
         }
 
-        val technology = request.technologyId?.let { techId ->
-            technologyRepository.getReferenceById(techId)
-        }
-
         val memberSkill = MemberSkill(
             memberId = memberId,
-            technologyId = request.technologyId,
-            technology = technology,
+            technologyName = request.technologyName,
             customName = request.customName,
             level = request.level,
             yearsOfUse = request.yearsOfUse,
@@ -66,7 +53,6 @@ class MemberSkillService(
 
     fun getMemberSkills(
         memberId: Long, 
-        category: TechnologyCategory? = null, 
         level: SkillLevel? = null
     ): List<MemberSkillResponse> {
         // 회원 존재 확인
@@ -74,9 +60,11 @@ class MemberSkillService(
             notFound(ErrorCode.MEMBER_NOT_FOUND)
         }
 
-        // Repository에서 Technology와 JOIN하여 필터링
-        return memberSkillRepository.findByMemberIdWithFilters(memberId, category, level)
-            .map { MemberSkillResponse.from(it) }
+        return if (level != null) {
+            memberSkillRepository.findByMemberIdAndLevel(memberId, level)
+        } else {
+            memberSkillRepository.findByMemberId(memberId)
+        }.map { MemberSkillResponse.from(it) }
     }
 
     fun getMemberSkillsByLevel(memberId: Long, level: SkillLevel): List<MemberSkillResponse> {
@@ -108,8 +96,7 @@ class MemberSkillService(
         val updated = MemberSkill(
             memberSkillId = memberSkill.memberSkillId,
             memberId = memberSkill.memberId,
-            technologyId = memberSkill.technologyId,
-            technology = memberSkill.technology,
+            technologyName = memberSkill.technologyName,
             customName = memberSkill.customName,
             level = request.level ?: memberSkill.level,
             yearsOfUse = request.yearsOfUse ?: memberSkill.yearsOfUse,
