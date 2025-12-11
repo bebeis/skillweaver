@@ -23,10 +23,9 @@ import com.bebeis.skillweaver.core.domain.learning.LearningPathType.DETAILED
 import com.bebeis.skillweaver.core.domain.learning.ResourceType
 import com.bebeis.skillweaver.core.domain.member.ExperienceLevel
 import com.bebeis.skillweaver.core.domain.member.LearningStyle
-import com.bebeis.skillweaver.core.domain.technology.TechnologyCategory
 import com.bebeis.skillweaver.core.storage.member.MemberRepository
 import com.bebeis.skillweaver.core.storage.member.MemberSkillRepository
-import com.bebeis.skillweaver.core.storage.technology.TechnologyRepository
+import com.bebeis.skillweaver.agent.graph.TechGraphService
 import com.bebeis.skillweaver.agent.tools.KnowledgeSearchTool
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.AchievesGoal
@@ -59,7 +58,7 @@ import kotlin.math.min
 @Component
 class NewTechLearningAgent(
     private val memberRepository: MemberRepository,
-    private val technologyRepository: TechnologyRepository,
+    private val techGraphService: TechGraphService,
     private val memberSkillRepository: MemberSkillRepository,
     private val eventPublisher: ApplicationEventPublisher,
     private val knowledgeSearchTool: KnowledgeSearchTool? = null,
@@ -1165,7 +1164,7 @@ class NewTechLearningAgent(
         val currentSkills = memberSkillRepository.findByMemberId(profile.memberId)
         val skillDetails = currentSkills.mapNotNull { skill ->
             val techName = skill.technologyName?.let { name ->
-                technologyRepository.findByKey(name)?.displayName
+                techGraphService.findByName(name)?.displayName
             } ?: skill.customName
             techName?.let { "$it (${skill.level.name}, ${skill.yearsOfUse} years)" }
         }.joinToString("\n- ")
@@ -1774,7 +1773,7 @@ class NewTechLearningAgent(
     private fun loadSkillNames(memberId: Long): List<String> {
         return memberSkillRepository.findByMemberId(memberId).mapNotNull { skill ->
             skill.technologyName?.let { name ->
-                technologyRepository.findByKey(name)?.displayName
+                techGraphService.findByName(name)?.displayName
             } ?: skill.customName
         }.filter { it.isNotBlank() }
             .map { it.trim() }
@@ -1803,12 +1802,12 @@ class NewTechLearningAgent(
 
         val technology = candidates
             .asSequence()
-            .mapNotNull { key -> technologyRepository.findByKey(key) }
+            .mapNotNull { key -> techGraphService.findByName(key) }
             .firstOrNull()
 
         return technology?.let {
             TechnologyDescriptor(
-                key = it.key,
+                key = it.name,
                 displayName = it.displayName,
                 category = it.category,
                 ecosystem = it.ecosystem ?: "General",
