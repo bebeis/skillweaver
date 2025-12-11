@@ -1,0 +1,20 @@
+{
+    "technology": "http",
+    "displayName": "HTTP",
+    "category": "CONCEPT",
+    "difficulty": "BEGINNER",
+    "description": "The Hypertext Transfer Protocol (HTTP) is the foundation of the World Wide Web, and is used to load web pages using hypertext links.",
+    "relations": [
+        {
+            "to": "cs-network",
+            "type": "DEPENDS_ON"
+        }
+    ],
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "MDN Web Docs",
+            "content": "# HTTP 학습 로드맵\n\n## 1. HTTP 기초\n- HTTP의 역사와 발전 (0.9, 1.0, 1.1, 2, 3)\n- 요청(Request)과 응답(Response) 구조\n- HTTP 메서드 (GET, POST, PUT, DELETE, PATCH 등)\n- 상태 코드 (2xx, 3xx, 4xx, 5xx)\n\n## 2. HTTP 헤더\n- General Headers\n- Request Headers\n- Response Headers\n- Entity Headers\n\n## 3. 고급 주제\n- 쿠키(Cookie)와 세션(Session)\n- 캐싱(Caching) 전략\n- HTTPS와 보안 (SSL/TLS)\n- HTTP/2와 HTTP/3의 특징 (Multiplexing, QUIC)"
+        }
+    ]
+}

@@ -1,0 +1,37 @@
+{
+    "technology": "linux",
+    "displayName": "Linux",
+    "category": "TOOL",
+    "difficulty": "INTERMEDIATE",
+    "description": "Linux is an open-source Unix-like operating system based on the Linux kernel.",
+    "relations": [
+        {
+            "to": "cs-os",
+            "type": "DEPENDS_ON"
+        },
+        {
+            "to": "java",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "python-data",
+            "type": "USED_WITH"
+        },
+        {
+            "to": "db-mysql",
+            "type": "USED_WITH"
+        }
+    ],
+    "documents": [
+        {
+            "type": "ROADMAP",
+            "source": "roadmap.sh/linux",
+            "content": "# Linux 학습 로드맵\n\n## 1. 기본 명령어\n- 파일 시스템 탐색: ls, cd, pwd\n- 파일 조작: cp, mv, rm, mkdir, touch\n- 파일 보기: cat, less, head, tail\n- 권한 관리: chmod, chown, chgrp\n\n## 2. 쉘 스크립팅\n- Bash 기본 문법\n- 변수, 조건문, 반복문\n- 파이프(|)와 리다이렉션(>, >>)\n\n## 3. 프로세스 관리\n- ps, top, htop\n- kill, nice, renice\n- 백그라운드/포그라운드 작업 (bg, fg, &)\n\n## 4. 네트워크 설정\n- ifconfig/ip 명령어\n- ssh, scp\n- ping, netstat, ss\n- 방화벽 (ufw, iptables)\n\n## 5. 시스템 관리\n- 사용자 및 그룹 관리 (useradd, groupadd)\n- 패키지 관리 (apt, yum, dnf)\n- 서비스 관리 (systemctl)\n- 로그 확인 (/var/log)"
+        },
+        {
+            "type": "BEST_PRACTICE",
+            "source": "Linux Command Line",
+            "content": "# 리눅스 사용 베스트 프랙티스\n\n## 1. 루트 권한 사용 주의\n- 일상적인 작업에는 일반 사용자 계정 사용\n- 필요한 경우에만 `sudo` 사용\n\n## 2. 파일 권한 최소화\n- 필요한 최소한의 권한만 부여 (777 사용 지양)\n- 보통 파일은 644, 디렉토리는 755\n\n## 3. 백업 생활화\n- 설정 파일 수정 전에는 반드시 백업 (`cp config config.bak`)\n- 크론탭(crontab)을 이용한 자동 백업 설정\n\n## 4. 쉘 스크립트 작성 시\n- `set -e` 옵션으로 에러 발생 시 스크립트 중단\n- 변수는 항상 따옴표로 감싸기 (`\"$VAR\"`)\n- 주석으로 설명 추가"
+        }
+    ]
+}

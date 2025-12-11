@@ -7,6 +7,8 @@ import com.bebeis.skillweaver.core.domain.learning.LearningStep
 import com.bebeis.skillweaver.core.domain.learning.ResourceType
 import com.bebeis.skillweaver.core.domain.learning.StepDifficulty
 import com.bebeis.skillweaver.core.domain.learning.StepResource
+import com.bebeis.skillweaver.core.domain.member.goal.GoalPriority
+import com.bebeis.skillweaver.core.domain.member.goal.GoalStatus
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -289,3 +291,83 @@ private fun parseBackgroundAnalysis(
         BackgroundAnalysisResponse(rawText = backgroundAnalysis)
     }
 }
+
+// ============================================================================
+// V5: 학습 시작하기 API DTOs
+// ============================================================================
+
+/**
+ * 학습 플랜 시작 요청 DTO
+ * POST /api/v1/members/{memberId}/learning-plans/{planId}/start
+ */
+data class StartLearningPlanRequest(
+    val goalTitle: String? = null,         // 미제공 시 자동 생성
+    val goalDescription: String? = null,   // 미제공 시 자동 생성
+    val dueDate: LocalDate? = null,
+    val priority: GoalPriority = GoalPriority.MEDIUM
+)
+
+/**
+ * 학습 플랜 시작 응답 DTO
+ */
+data class StartLearningPlanResponse(
+    val learningGoalId: Long,
+    val learningPlanId: Long,
+    val title: String,
+    val description: String,
+    val dueDate: LocalDate?,
+    val priority: GoalPriority,
+    val status: GoalStatus,
+    val totalSteps: Int,
+    val completedSteps: Int,
+    val progressPercentage: Int,
+    val linkedPlan: LinkedPlanSummary,
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime
+)
+
+/**
+ * 연결된 학습 플랜 요약 정보
+ */
+data class LinkedPlanSummary(
+    val learningPlanId: Long,
+    val targetTechnology: String,
+    val totalWeeks: Int,
+    val totalHours: Int,
+    val status: LearningPlanStatus
+)
+
+/**
+ * 스텝 완료 시 Goal 진행률 정보 (V5 확장)
+ */
+data class GoalProgressInfo(
+    val learningGoalId: Long,
+    val status: GoalStatus,
+    val progressPercentage: Int,
+    val completedSteps: Int,
+    val totalSteps: Int
+)
+
+/**
+ * 스텝 완료 응답 DTO (V5 확장)
+ */
+data class CompleteStepResponseV5(
+    val step: StepCompletionInfo,
+    val planProgress: PlanProgressInfo,
+    val goalUpdated: GoalProgressInfo?  // nullable - Goal이 연결 안 됐을 수 있음
+)
+
+data class StepCompletionInfo(
+    val stepId: Long,
+    val order: Int,
+    val title: String,
+    val completed: Boolean,
+    val completedAt: LocalDateTime
+)
+
+data class PlanProgressInfo(
+    val learningPlanId: Long,
+    val progress: Int,
+    val completedSteps: Int,
+    val totalSteps: Int
+)

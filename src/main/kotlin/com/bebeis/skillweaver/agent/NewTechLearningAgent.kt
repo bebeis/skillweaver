@@ -27,6 +27,7 @@ import com.bebeis.skillweaver.core.storage.member.MemberRepository
 import com.bebeis.skillweaver.core.storage.member.MemberSkillRepository
 import com.bebeis.skillweaver.agent.graph.TechGraphService
 import com.bebeis.skillweaver.agent.tools.KnowledgeSearchTool
+import com.bebeis.skillweaver.agent.graph.TechCategory
 import com.embabel.agent.api.annotation.Action
 import com.embabel.agent.api.annotation.AchievesGoal
 import com.embabel.agent.api.annotation.Agent
@@ -1830,7 +1831,7 @@ class NewTechLearningAgent(
             TechnologyDescriptor(
                 key = normalized.ifBlank { lower },
                 displayName = displayName,
-                category = TechnologyCategory.FRAMEWORK,
+                category = TechCategory.FRAMEWORK,
                 ecosystem = "General",
                 officialSite = null,
                 isFallback = true
@@ -1841,7 +1842,7 @@ class NewTechLearningAgent(
     private data class TechnologyDescriptor(
         val key: String,
         val displayName: String,
-        val category: TechnologyCategory,
+        val category: TechCategory,
         val ecosystem: String,
         val officialSite: String?,
         val isFallback: Boolean

@@ -4,6 +4,7 @@ import com.bebeis.skillweaver.agent.domain.DailyScheduleItem
 import com.bebeis.skillweaver.agent.domain.GeneratedLearningPlan
 import com.bebeis.skillweaver.api.common.dto.PaginationResponse
 import com.bebeis.skillweaver.api.common.exception.ErrorCode
+import com.bebeis.skillweaver.api.common.exception.conflict
 import com.bebeis.skillweaver.api.common.exception.notFound
 import com.bebeis.skillweaver.api.plan.dto.*
 import com.bebeis.skillweaver.api.plan.dto.toStepResource
@@ -12,6 +13,7 @@ import com.bebeis.skillweaver.core.domain.learning.LearningPlanStatus
 import com.bebeis.skillweaver.core.domain.learning.LearningStep
 import com.bebeis.skillweaver.core.domain.learning.StepDifficulty
 import com.bebeis.skillweaver.core.domain.learning.StepResource
+import com.bebeis.skillweaver.core.service.member.LearningGoalService
 import com.bebeis.skillweaver.core.storage.learning.LearningPlanRepository
 import com.bebeis.skillweaver.core.storage.learning.LearningStepRepository
 import com.bebeis.skillweaver.core.storage.member.MemberRepository
@@ -29,7 +31,8 @@ class LearningPlanService(
     private val learningPlanRepository: LearningPlanRepository,
     private val learningStepRepository: LearningStepRepository,
     private val memberRepository: MemberRepository,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val learningGoalService: LearningGoalService  // V5: Goal 연동
 ) {
     private val logger = LoggerFactory.getLogger(LearningPlanService::class.java)
 
@@ -132,7 +135,7 @@ class LearningPlanService(
         }
 
         val updated = LearningPlan(
-            learningPlanId = plan.learningPlanId,
+            learningPlanId = planId,
             memberId = plan.memberId,
             targetTechnology = plan.targetTechnology,
             totalWeeks = plan.totalWeeks,
@@ -188,7 +191,7 @@ class LearningPlanService(
         val newProgress = ((completedSteps.toDouble() / totalSteps) * 100).toInt()
 
         val updatedPlan = LearningPlan(
-            learningPlanId = plan.learningPlanId,
+            learningPlanId = planId,
             memberId = plan.memberId,
             targetTechnology = plan.targetTechnology,
             totalWeeks = plan.totalWeeks,
@@ -202,6 +205,17 @@ class LearningPlanService(
 
         val savedPlan = learningPlanRepository.save(updatedPlan)
         logger.info("Learning plan progress updated: ${savedPlan.learningPlanId} -> $newProgress%")
+
+        // V5: 연결된 Goal의 진행률 동기화
+        val linkedGoal = learningGoalService.findByLearningPlanId(planId)
+        linkedGoal?.let { goal ->
+            val updatedGoal = learningGoalService.updateProgress(
+                goalId = goal.learningGoalId!!,
+                completedSteps = completedSteps.toInt(),
+                totalSteps = totalSteps.toInt()
+            )
+            logger.info("Linked goal progress synced: goalId=${updatedGoal.learningGoalId}, progress=${updatedGoal.progressPercentage}%")
+        }
 
         val steps = learningStepRepository.findByLearningPlanIdOrderByOrder(planId)
         return LearningPlanResponse.from(savedPlan, steps, objectMapper)
@@ -286,7 +300,7 @@ class LearningPlanService(
         }
 
         val updatedPlan = LearningPlan(
-            learningPlanId = plan.learningPlanId,
+            learningPlanId = planId,
             memberId = plan.memberId,
             targetTechnology = plan.targetTechnology,
             totalWeeks = plan.totalWeeks,
@@ -369,4 +383,97 @@ class LearningPlanService(
             else -> StepDifficulty.HARD
         }
     }
+
+    // =========================================================================
+    // V5: 학습 시작하기 API
+    // =========================================================================
+
+    /**
+     * 학습 플랜을 시작하고 연결된 학습 목표를 생성합니다.
+     * 
+     * @param memberId 회원 ID
+     * @param planId 학습 플랜 ID
+     * @param request 목표 생성 요청 (optional 필드들)
+     * @return 생성된 학습 목표와 시작된 플랜 정보
+     */
+    @Transactional
+    fun startLearningPlan(
+        memberId: Long,
+        planId: Long,
+        request: StartLearningPlanRequest
+    ): StartLearningPlanResponse {
+        if (!memberRepository.existsById(memberId)) {
+            notFound(ErrorCode.MEMBER_NOT_FOUND)
+        }
+
+        val plan = learningPlanRepository.findById(planId).orElse(null)
+            ?: notFound(ErrorCode.LEARNING_PLAN_NOT_FOUND)
+
+        if (plan.memberId != memberId) {
+            notFound(ErrorCode.LEARNING_PLAN_NOT_FOUND)
+        }
+
+        // 이미 시작된 플랜인지 확인 (연결된 학습 목표가 있으면 이미 시작된 것)
+        val existingGoal = learningGoalService.findByLearningPlanId(planId)
+        if (existingGoal != null) {
+            conflict(ErrorCode.LEARNING_PLAN_ALREADY_STARTED.message)
+        }
+
+        // 플랜 상태를 ACTIVE로 변경 (이미 ACTIVE면 유지)
+        val activatedPlan = if (plan.status != LearningPlanStatus.ACTIVE) {
+            val updated = LearningPlan(
+                learningPlanId = planId,
+                memberId = plan.memberId,
+                targetTechnology = plan.targetTechnology,
+                totalWeeks = plan.totalWeeks,
+                totalHours = plan.totalHours,
+                status = LearningPlanStatus.ACTIVE,
+                progress = plan.progress,
+                backgroundAnalysis = plan.backgroundAnalysis,
+                dailySchedule = plan.dailySchedule,
+                startedAt = plan.startedAt ?: LocalDateTime.now()
+            )
+            learningPlanRepository.save(updated)
+        } else plan
+
+        // 전체 스텝 수 조회
+        val totalSteps = learningStepRepository.countByLearningPlanId(planId)
+
+        // 목표 생성
+        val goal = learningGoalService.createGoalFromPlan(
+            memberId = memberId,
+            planId = planId,
+            targetTechnology = activatedPlan.targetTechnology,
+            totalSteps = totalSteps.toInt(),
+            goalTitle = request.goalTitle,
+            goalDescription = request.goalDescription,
+            dueDate = request.dueDate,
+            priority = request.priority
+        )
+
+        logger.info("Learning plan started: planId=$planId, goalId=${goal.learningGoalId}")
+
+        return StartLearningPlanResponse(
+            learningGoalId = goal.learningGoalId!!,
+            learningPlanId = activatedPlan.learningPlanId!!,
+            title = goal.title,
+            description = goal.description,
+            dueDate = goal.dueDate,
+            priority = goal.priority,
+            status = goal.status,
+            totalSteps = goal.totalSteps ?: 0,
+            completedSteps = goal.completedSteps,
+            progressPercentage = goal.progressPercentage,
+            linkedPlan = LinkedPlanSummary(
+                learningPlanId = planId,
+                targetTechnology = activatedPlan.targetTechnology,
+                totalWeeks = activatedPlan.totalWeeks,
+                totalHours = activatedPlan.totalHours,
+                status = activatedPlan.status
+            ),
+            createdAt = goal.createdAt,
+            updatedAt = goal.updatedAt
+        )
+    }
 }
+

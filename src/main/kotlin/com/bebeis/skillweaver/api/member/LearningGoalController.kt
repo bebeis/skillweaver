@@ -6,6 +6,10 @@ import com.bebeis.skillweaver.api.member.dto.CreateLearningGoalRequest
 import com.bebeis.skillweaver.api.member.dto.LearningGoalListResponse
 import com.bebeis.skillweaver.api.member.dto.LearningGoalResponse
 import com.bebeis.skillweaver.api.member.dto.UpdateLearningGoalRequest
+// Phase 4: Streak & Report DTOs
+import com.bebeis.skillweaver.api.member.dto.StreakResponse
+import com.bebeis.skillweaver.api.member.dto.WeeklyReportResponse
+import com.bebeis.skillweaver.api.member.dto.MonthlyReportResponse
 import com.bebeis.skillweaver.core.domain.member.goal.GoalPriority
 import com.bebeis.skillweaver.core.domain.member.goal.GoalStatus
 import com.bebeis.skillweaver.core.service.member.LearningGoalService
@@ -86,4 +90,54 @@ class LearningGoalController(
         require(authMemberId == memberId) { "본인의 목표만 삭제할 수 있습니다" }
         learningGoalService.deleteGoal(memberId, goalId)
     }
+
+    // =========================================================================
+    // Phase 4: 스트릭 및 리포트 API
+    // =========================================================================
+
+    /**
+     * 학습 스트릭 정보 조회
+     * GET /api/v1/members/{memberId}/goals/{goalId}/streak
+     */
+    @GetMapping("/{goalId}/streak")
+    fun getStreak(
+        @AuthUser authMemberId: Long,
+        @PathVariable memberId: Long,
+        @PathVariable goalId: Long
+    ): ResponseEntity<ApiResponse<StreakResponse>> {
+        require(authMemberId == memberId) { "본인의 목표만 조회할 수 있습니다" }
+        val response = learningGoalService.getStreakInfo(memberId, goalId)
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    /**
+     * 주간 학습 리포트 조회
+     * GET /api/v1/members/{memberId}/goals/{goalId}/reports/weekly
+     */
+    @GetMapping("/{goalId}/reports/weekly")
+    fun getWeeklyReport(
+        @AuthUser authMemberId: Long,
+        @PathVariable memberId: Long,
+        @PathVariable goalId: Long
+    ): ResponseEntity<ApiResponse<WeeklyReportResponse>> {
+        require(authMemberId == memberId) { "본인의 목표만 조회할 수 있습니다" }
+        val response = learningGoalService.getWeeklyReport(memberId, goalId)
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
+
+    /**
+     * 월간 학습 리포트 조회
+     * GET /api/v1/members/{memberId}/goals/{goalId}/reports/monthly
+     */
+    @GetMapping("/{goalId}/reports/monthly")
+    fun getMonthlyReport(
+        @AuthUser authMemberId: Long,
+        @PathVariable memberId: Long,
+        @PathVariable goalId: Long
+    ): ResponseEntity<ApiResponse<MonthlyReportResponse>> {
+        require(authMemberId == memberId) { "본인의 목표만 조회할 수 있습니다" }
+        val response = learningGoalService.getMonthlyReport(memberId, goalId)
+        return ResponseEntity.ok(ApiResponse.success(response))
+    }
 }
+

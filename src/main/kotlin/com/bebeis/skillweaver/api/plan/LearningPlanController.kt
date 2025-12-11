@@ -110,4 +110,32 @@ class LearningPlanController(
         require(authMemberId == memberId) { "본인의 학습 플랜만 삭제할 수 있습니다" }
         learningPlanService.deletePlan(memberId, planId)
     }
+
+    // =========================================================================
+    // V5: 학습 시작하기 API
+    // =========================================================================
+
+    /**
+     * 학습 플랜을 시작하고 연결된 학습 목표를 자동 생성합니다.
+     * 
+     * POST /api/v1/members/{memberId}/learning-plans/{planId}/start
+     */
+    @PostMapping("/{planId}/start")
+    fun startLearningPlan(
+        @AuthUser authMemberId: Long,
+        @PathVariable memberId: Long,
+        @PathVariable planId: Long,
+        @Valid @RequestBody(required = false) request: StartLearningPlanRequest?
+    ): ResponseEntity<ApiResponse<StartLearningPlanResponse>> {
+        require(authMemberId == memberId) { "본인의 학습 플랜만 시작할 수 있습니다" }
+        val response = learningPlanService.startLearningPlan(
+            memberId = memberId,
+            planId = planId,
+            request = request ?: StartLearningPlanRequest()
+        )
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(ApiResponse.success(response, "학습 목표가 생성되고 학습이 시작되었습니다."))
+    }
 }
+

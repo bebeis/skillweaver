@@ -11,4 +11,7 @@ interface LearningGoalRepository : JpaRepository<LearningGoal, Long> {
     fun findByMemberId(memberId: Long): List<LearningGoal>
     fun findByMemberIdAndStatus(memberId: Long, status: GoalStatus): List<LearningGoal>
     fun findByMemberIdAndPriority(memberId: Long, priority: GoalPriority): List<LearningGoal>
+    
+    // V5: Plan-Goal 연동
+    fun findByLearningPlanId(learningPlanId: Long): LearningGoal?
 }
